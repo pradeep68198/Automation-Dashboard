@@ -1,0 +1,161 @@
+<%@ page import = "java.text.*" %>
+<%@ page import = "java.util.*" %>
+<%@ page import = "java.io.*" %>
+<%@ page import = "Utilities.General_Functions1" %>
+
+<%@ page import = "javax.swing.filechooser.FileSystemView" %>
+
+<%!
+String Src_DB,Src_Query,Src_Username,Src_Password,Tgt_DB="",Tgt_Query,Tgt_Username,Tgt_Password,Result_File,Key_Column,Result_File_path,Input_File_Path;
+SimpleDateFormat formatter = new SimpleDateFormat("dd_MM_yyyy_hh_mm_ss");
+String[] data;
+  static HashMap<String, Long> Column_Mismatch;
+  HashMap<String, Long> Temp_Column_Mismatch ;
+  static  HashMap<Integer, String> Table_column;
+  long startTime1,stopTime1,elapsedTime1;
+  String Full_data="";
+%>
+
+<%
+
+String Type=(String)session.getAttribute("Type_Target"); 
+
+if(Type.equalsIgnoreCase("No")){
+Tgt_DB=request.getParameter("tgt_type");
+session.setAttribute("Tgt_DB",Tgt_DB);
+
+
+}
+if(Type.equalsIgnoreCase("Excel")){
+	Tgt_DB=Type;
+	session.setAttribute("Tgt_DB",Tgt_DB);
+}
+
+if(Tgt_DB.equalsIgnoreCase("Hive")){
+	
+	
+	session.setAttribute("Tgt_Query_Hive",request.getParameter("tgt_query_hive"));
+	session.setAttribute("Tgt_Username_Hive",request.getParameter("tgt_username_hive"));
+	session.setAttribute("Tgt_Password_Hive",request.getParameter("tgt_password_hive"));
+}
+
+if(Tgt_DB.equalsIgnoreCase("SQL Server")){
+	
+	session.setAttribute("Tgt_Query_SQL",request.getParameter("tgt_query_sql"));
+	session.setAttribute("Tgt_Username_SQL",request.getParameter("tgt_username_sql"));
+	session.setAttribute("Tgt_Password_SQL",request.getParameter("tgt_password_sql"));
+	session.setAttribute("Tgt_Server_SQL",request.getParameter("tgt_server_name_sql"));
+	session.setAttribute("Tgt_DBname_SQL",request.getParameter("tgt_db_name_sql"));
+	
+}
+
+if(Tgt_DB.equalsIgnoreCase("DB2")){
+	
+	session.setAttribute("Tgt_Query_DB2",request.getParameter("tgt_query_db2"));
+	session.setAttribute("Tgt_Username_DB2",request.getParameter("tgt_username_db2"));
+	session.setAttribute("Tgt_Password_DB2",request.getParameter("tgt_password_db2"));
+	session.setAttribute("Tgt_DBname_DB2",request.getParameter("tgt_db_name_db2"));
+	session.setAttribute("Tgt_Port_DB2",request.getParameter("tgt_port_db2"));
+	session.setAttribute("Tgt_Host_DB2",request.getParameter("tgt_host_db2"));
+}
+
+if(Tgt_DB.equalsIgnoreCase("Netezza")){
+	
+	session.setAttribute("Tgt_Query_Netezza",request.getParameter("tgt_query_netezza"));
+	session.setAttribute("Tgt_Username_Netezza",request.getParameter("tgt_username_netezza"));
+	session.setAttribute("Tgt_Password_Netezza",request.getParameter("tgt_password_netezza"));
+	session.setAttribute("Tgt_DBname_Netezza",request.getParameter("tgt_db_name_netezza"));
+	session.setAttribute("Tgt_Server_Netezza",request.getParameter("tgt_server_name_netezza"));
+}
+
+General_Functions1 obj=new General_Functions1();
+
+if(Type.equalsIgnoreCase("NO")){
+	
+	if(Tgt_DB.equalsIgnoreCase("Hive")){
+		
+		data=obj.Uncommon(session.getAttribute("Tgt_Query_Hive").toString(),"Non Excel");
+		
+	}
+    if(Tgt_DB.equalsIgnoreCase("SQL Server")){
+    	
+    	data=obj.Uncommon(session.getAttribute("Tgt_Query_SQL").toString(),"Non Excel");
+		
+	}
+   if(Tgt_DB.equalsIgnoreCase("DB2")){
+	   
+	   data=obj.Uncommon(session.getAttribute("Tgt_Query_DB2").toString(),"Non Excel");
+	
+     }
+   
+    if(Tgt_DB.equalsIgnoreCase("Netezza")){
+	   
+	   data=obj.Uncommon(session.getAttribute("Tgt_Query_Netezza").toString(),"Non Excel");
+	
+     }
+	
+	
+}
+
+if(Type.equalsIgnoreCase("Excel")){
+	 data=obj.Uncommon(session.getAttribute("File_Path_Target").toString(),"Excel");
+}
+
+if(Type.equalsIgnoreCase("CSV")){
+	 data=obj.Uncommon_csv(session.getAttribute("Tgt_Column_Name").toString());
+}
+
+
+
+%>
+
+<!DOCTYPE html>
+<html>
+
+<head>
+<script>
+
+  function preventBack(){window.history.forward();}
+  setTimeout("preventBack()", 0);
+  window.onunload=function(){null};
+</script>
+
+<title>Home</title>
+
+<link rel="stylesheet"  href="CSS/Form.css">
+<link rel="stylesheet"  href="CSS/multiselect.css">
+
+
+</head>
+<body>
+
+<H2><center>Data Validator Dashboard<HR></center></H2>
+<BR>
+
+
+<form method="post" name=f1_Prop id=f1_Prop>
+
+
+<H4><center>Select the Key Column </center></H4>
+<center>
+
+<select id="testSelect1" name="testSelect1" multiple style="width: 300px;height: 70%;">
+
+<% for(int i=0;i<data.length;i++){ %>
+
+<option value='<%= i+1 %>'><%= data[i] %></option>
+
+
+<%} %>
+</select>
+</center>
+<div class="form-style-5">
+<input type="submit" name="submit1" value="Begin Execution" formAction='Validation.jsp'  />
+</div>
+</form>
+
+
+
+
+</body>
+</html>
