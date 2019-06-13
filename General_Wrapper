@@ -1,0 +1,974 @@
+package com.report.utilities;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+
+import javax.swing.JFrame;
+import javax.swing.JTextArea;
+import jxl.Cell;
+import jxl.Sheet;
+import jxl.Workbook;
+import jxl.read.biff.BiffException;
+
+import org.apache.commons.configuration2.Configuration;
+import org.apache.commons.configuration2.FileBasedConfiguration;
+import org.apache.commons.configuration2.PropertiesConfiguration;
+import org.apache.commons.configuration2.builder.FileBasedConfigurationBuilder;
+import org.apache.commons.configuration2.builder.fluent.Parameters;
+import org.apache.commons.configuration2.ex.ConfigurationException;
+import org.apache.commons.io.FileUtils;
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.DataFormatter;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.FontFamily;
+import org.apache.poi.ss.usermodel.IndexedColors;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.xssf.streaming.SXSSFSheet;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFCellStyle;
+import org.apache.poi.xssf.usermodel.XSSFFont;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import com.google.common.base.Strings;
+
+
+
+public class General_Wrapper extends JFRAME_File {
+	
+
+	public static  String driverName_Hive = "org.apache.hive.jdbc.HiveDriver";
+	public static  String driverName_Sql = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
+    public static  Connection con_hive;
+    public static  Statement stmt_hive;
+    public static  Connection con_sql;
+    public static  Statement stmt_sql;
+    public ResultSet res_hive,res_sql;
+    public static  String Username,pwd,Param_Path,Report_Type,Copy_Param_Path;
+    public static String[] Temp_Value;
+    public static String[][] Data_Collection;
+    public static  JFrame frame1;
+    public static JTextArea Area;
+    public static  SimpleDateFormat formatter1 = new SimpleDateFormat("dd:MM:yyyy - hh:mm:ss  : ");
+    
+    public static  SimpleDateFormat formatter2 = new SimpleDateFormat("dd_MM_yyyy_hh_mm");
+    public static String[][] Expected_Data;
+    public static String[][] Actual_Data;
+    public static String Result_File,Result_File_Path;
+    public static String Expected="Expected";
+    public static String Actual="Actual";
+    public static String Count_Report="Count Report";
+    public static String Missing_Record="Missing Record";
+    public static String Data_Mismatch="Data Mismatch";
+    public static String Data_Compare="Data Compare";
+    public static String Summary="Summary";
+    public static boolean Actual_Missing_Flag=false;
+    public static boolean Expected_Missing_Flag=false;
+    public static boolean Data_Mismatch_Flag=false;
+    public static boolean Count_Mismatch_Flag=false;
+    public static String[] Column_Name;
+    public static String[] Expected_Index ;
+    public static String[] Actual_Index ;
+    public static int[] Keyvalue_Column;
+    public static ArrayList<String> Final_output = new ArrayList<String>();
+    public static HashMap<Integer, Integer> Data_Index =new HashMap<Integer, Integer>();
+    
+    public static void Hive_HDBC() throws ClassNotFoundException, SQLException{
+   	  
+  	   Class.forName(driverName_Hive);
+  	   con_hive = DriverManager.getConnection("jdbc:hive2://hiveldap.aetna.com:10000/default;AuthMech=3;",Username,pwd);
+  	   stmt_hive = con_hive.createStatement();
+  	 Area.append(formatter1.format(new Date())+"Hive Connection Success \n");
+  	   System.out.println("Hive Connection Success");
+      }
+     
+     public static void Hive_HDBC_Close() throws ClassNotFoundException, SQLException{
+     	con_hive.close();
+     	 Area.append(formatter1.format(new Date())+"Hive Connection Close \n");
+      	
+      }
+     
+     public static void SQL_Server() throws ClassNotFoundException, SQLException{
+  	  
+  	   Class.forName(driverName_Sql);
+  	   con_sql = DriverManager.getConnection("jdbc:sqlserver://reqborqa:1433;integratedSecurity=true");
+  	  
+  	  stmt_sql = con_sql.createStatement();
+  	 Area.append(formatter1.format(new Date())+"SQL Server Connection Success \n");
+  	  System.out.println("Sql Server Connection Success");
+  	  
+  	 
+      	
+      }
+     
+     public static void SQL_Server_Close() throws ClassNotFoundException, SQLException{
+    	 Area.append(formatter1.format(new Date())+"Sql Server Connection Close \n");
+     	con_sql.close();
+  	   
+      	
+      }
+     
+    
+     
+     
+     
+     public static String[][] readXLSX(String Filepath,String Sheet) throws IOException{
+ 		File excel=new File(Filepath);
+ 		FileInputStream fis=new FileInputStream(excel);
+ 		String Value=null;
+ 		XSSFWorkbook book=new XSSFWorkbook(fis);
+ 		XSSFSheet ws=book.getSheet(Sheet);
+ 		XSSFCell cell;
+ 		
+ 		DataFormatter format=new DataFormatter();
+ 		int rowNum=ws.getLastRowNum()+1;
+ 		int colNum=ws.getRow(0).getLastCellNum();
+ 		
+ 		String[][] Parameter=new String[(colNum)][(rowNum)];
+ 		for(int i=0;i<rowNum;i++){
+ 			XSSFRow row=ws.getRow(i);
+ 			for(int j=0;j<colNum;j++){
+ 				
+ 				cell=row.getCell(j);
+ 				if(!(cell==null)){
+ 					Value=format.formatCellValue(cell);
+ 				}
+ 				else{
+ 					Value=null;
+ 				}
+ 				Parameter[j][i]=Value;
+ 			}
+ 			
+ 		}
+ 		book.close();
+ 		return Parameter;
+ 		
+ 	}
+     
+ 
+     
+     public static String[][] ExcelRead(String Filepath,String sheet) throws BiffException, IOException{
+
+    	 String[][] parameterarray;
+    	 String filename=Filepath;
+    	 File myexcel = new File(filename);
+    	 Workbook objWork=Workbook.getWorkbook(myexcel);
+    	 Sheet objsheet = objWork.getSheet(sheet);
+    	 int Cols = objsheet.getColumns();
+    	 int Rows = objsheet.getRows();
+    	 parameterarray = new String[Cols][Rows];
+    	
+
+    	 for (int row=1;row<Rows;row++){
+    	 for (int col=0;col<Cols;col++){
+    	 //System.out.println("6");
+    		 
+    		
+    	 Cell objcell=objsheet.getCell(col, row);
+    	 parameterarray[col][row]=objcell.getContents().toString();
+    	// System.out.println( parameterarray[col][row]);
+
+    	 }
+    	 }
+
+
+
+    	 return parameterarray;
+
+    	 }
+     
+     
+     
+ 	
+ 	public static boolean isStringEmpty(String input){
+         if(input.trim().length() == 0){
+             return true;
+         }
+         return false;
+     }
+ 	
+ 	public static boolean isStringNull(String input){
+ 	
+         if(input == null ){
+             return true;
+         }
+         return false;
+     }
+   
+
+ 	
+ 	public static void Create_Sheet(String Filepath,String Sheet) throws IOException{
+ 		
+ 		FileInputStream fis=new FileInputStream(Filepath);
+ 		XSSFWorkbook book=new XSSFWorkbook(fis);
+ 		XSSFSheet ws=book.createSheet(Sheet);
+ 		
+ 		if(Sheet.equalsIgnoreCase("Summary")){
+ 			book.setSheetOrder("Summary", 0);
+ 		}
+ 		fis.close();
+ 		FileOutputStream fo=new FileOutputStream(Filepath);
+ 		book.write(fo);
+ 		book.close();
+ 		fo.flush();
+ 		fo.close();
+ 		
+ 	}
+ 	
+
+ 	
+ public static String Create_Book(String Filepath) throws IOException{
+ 	
+ 		String FP=Filepath;
+ 		XSSFWorkbook workbook = new XSSFWorkbook();
+ 	    FileOutputStream out = new FileOutputStream(new File(FP));
+ 	      workbook.write(out);
+ 	      out.close();
+ 	      return FP;
+ 			
+ 		}
+
+ public static String writeBody(String Filepath,String Sheet,String Value,int col,int row,int St) throws IOException{
+ 	String val=Value;
+ 	String main=Sheet;
+ 	FileInputStream fis=new FileInputStream(Filepath);
+ 	XSSFWorkbook book=new XSSFWorkbook(fis);
+ 	XSSFSheet ws=book.getSheet(main);
+ 	ws.autoSizeColumn(col);
+ 	XSSFCellStyle lock=book.createCellStyle();
+     lock.setAlignment(XSSFCellStyle.ALIGN_LEFT);
+    // lock.setWrapText(true);
+     //lock.setLocked(true);
+     XSSFFont font= book.createFont();
+     font.setFontHeightInPoints((short)10);
+     font.setFontName("Verdana");
+     font.setColor(IndexedColors.BLACK.getIndex());
+     font.setBold(false);
+     font.setItalic(false);
+     lock.setFont(font);
+     lock.setBorderTop(XSSFCellStyle.BORDER_MEDIUM);
+     lock.setBorderRight(XSSFCellStyle.BORDER_MEDIUM);
+     lock.setBorderBottom(XSSFCellStyle.BORDER_MEDIUM);
+     lock.setBorderLeft(XSSFCellStyle.BORDER_MEDIUM);
+ 	if(St==1){
+ 		XSSFRow rr=ws.createRow(row);
+ 		XSSFCell cell=rr.createCell(col);
+ 		
+ 		cell.setCellValue(Value);
+ 		cell.setCellStyle(lock);
+ 		
+ 	
+ 	}
+ 	else{
+ 		
+ 		XSSFRow rr=ws.getRow(row);
+ 		XSSFCell cell=rr.createCell(col);
+ 		cell.setCellValue(Value);
+ 		cell.setCellStyle(lock);
+ 	}
+ 	
+ 	//ws.protectSheet("Password1");
+ 	fis.close();
+ 	FileOutputStream fo=new FileOutputStream(Filepath);
+ 	book.write(fo);
+ 	book.close();
+ 	fo.flush();
+ 	fo.close();
+ 	return val;
+ }
+ 
+ public static void Unmatched_Column(String Filepath,String Sheet,int col,int row) throws IOException{
+	   
+	 	String main=Sheet;
+	 	FileInputStream fis=new FileInputStream(Filepath);
+	 	XSSFWorkbook book=new XSSFWorkbook(fis);
+	 	XSSFSheet ws=book.getSheet(main);
+	 	XSSFCellStyle lock=book.createCellStyle();
+	 	lock.setFillForegroundColor(IndexedColors.RED.getIndex());
+	 	lock.setFillPattern(CellStyle.SOLID_FOREGROUND); 
+	    lock.setAlignment(XSSFCellStyle.ALIGN_CENTER);
+	 	XSSFRow rr=ws.getRow(row);
+ 		XSSFCell cell=rr.getCell(col);
+ 		cell.setCellStyle(lock);
+ 		fis.close();
+ 	 	FileOutputStream fo=new FileOutputStream(Filepath);
+ 	 	book.write(fo);
+ 	 	book.close();
+ 	 	fo.flush();
+ 	 	fo.close();
+	 
+ }
+ 
+ public static void matched_Column(String Filepath,String Sheet,int col,int row) throws IOException{
+	   
+	 	String main=Sheet;
+	 	FileInputStream fis=new FileInputStream(Filepath);
+	 	XSSFWorkbook book=new XSSFWorkbook(fis);
+	 	XSSFSheet ws=book.getSheet(main);
+	 	XSSFCellStyle lock=book.createCellStyle();
+	 	lock.setFillForegroundColor(IndexedColors.GREEN.getIndex());
+	 	lock.setFillPattern(CellStyle.SOLID_FOREGROUND); 
+	    lock.setAlignment(XSSFCellStyle.ALIGN_CENTER);
+	 	XSSFRow rr=ws.getRow(row);
+		XSSFCell cell=rr.getCell(col);
+		cell.setCellStyle(lock);
+		fis.close();
+	 	FileOutputStream fo=new FileOutputStream(Filepath);
+	 	book.write(fo);
+	 	book.close();
+	 	fo.flush();
+	 	fo.close();
+	 
+}
+ 
+ 
+
+ public static String writeBody_H(String Filepath,String Sheet,String Value,int col,int row,int St) throws IOException{
+ 	String val=Value;
+ 	String main=Sheet;
+ 	FileInputStream fis=new FileInputStream(Filepath);
+ 	XSSFWorkbook book=new XSSFWorkbook(fis);
+ 	XSSFSheet ws=book.getSheet(main);
+ 	ws.autoSizeColumn(col);
+ 	XSSFCellStyle lock=book.createCellStyle();
+ 	//lock.setFillForegroundColor(IndexedColors.YELLOW.getIndex());
+ 	//lock.setFillPattern(CellStyle.SOLID_FOREGROUND); 
+ 	 //lock.setWrapText(true);
+     lock.setAlignment(XSSFCellStyle.ALIGN_CENTER);
+     XSSFFont font= book.createFont();
+     font.setFontHeightInPoints((short)10);
+     font.setFontName("Verdana");
+     font.setColor(IndexedColors.BLACK.getIndex());
+     font.setBold(true);
+     font.setItalic(false);
+     lock.setFont(font);
+     lock.setBorderTop(XSSFCellStyle.BORDER_MEDIUM);
+     lock.setBorderRight(XSSFCellStyle.BORDER_MEDIUM);
+     lock.setBorderBottom(XSSFCellStyle.BORDER_MEDIUM);
+     lock.setBorderLeft(XSSFCellStyle.BORDER_MEDIUM);
+     
+    //lock.setWrapText(true);
+     //lock.setLocked(true);
+ 	if(St==1){
+ 		XSSFRow rr=ws.createRow(row);
+ 		XSSFCell cell=rr.createCell(col);
+ 		cell.setCellValue(Value);
+ 		cell.setCellStyle(lock);
+ 		//ws.createRow(row).createCell(col).setCellStyle(lock).setCellValue(Value);
+ 	}
+ 	else{
+ 		
+ 		XSSFRow rr=ws.getRow(row);
+ 		XSSFCell cell=rr.createCell(col);
+ 		cell.setCellValue(Value);
+ 		cell.setCellStyle(lock);//
+ 		//ws.getRow(row).createCell(col).setCellValue(Value);
+ 	}
+ 	
+ 	//ws.protectSheet("Password1");
+ 	fis.close();
+ 	FileOutputStream fo=new FileOutputStream(Filepath);
+ 	book.write(fo);
+ 	book.close();
+ 	fo.flush();
+ 	fo.close();
+ 	return val;
+ }
+ 
+ public static void Compare_Sheets(String[][] Actual,String[][] Generated,String Filepath,String Sheet) throws IOException{
+	 
+	 for(int i=1;i<Actual[0].length;i++){
+		 
+		 for(int j=0;j<Actual.length;j++){
+			 
+			
+			 
+			 if(Actual[j][i].trim().equalsIgnoreCase(Generated[j][i].trim())){
+				 
+				
+				 
+				//matched_Column(Filepath,Sheet,j,i);
+			 }
+			 else{
+				
+				 Unmatched_Column(Filepath,Sheet,j,i);
+				 
+			 }
+			 
+		 }
+		 
+	 }
+	 
+	 
+	 
+	 
+ }
+ 
+ 
+ 
+ public static void Parameter_Update_Hedis_Reporting_Entity(String Path,String[] value) throws ConfigurationException{
+	 
+	 
+	    Parameters params = new Parameters();
+		FileBasedConfigurationBuilder<FileBasedConfiguration> builder =
+		    new FileBasedConfigurationBuilder<FileBasedConfiguration>(PropertiesConfiguration.class)
+		    .configure(params.properties()
+		        .setFileName(Path));
+		Configuration config = builder.getConfiguration();
+		
+		config.setProperty("REQUEST_CONFIGURATION_ID",value[0]);
+		config.setProperty("REQUEST_ID",value[1]);
+		config.setProperty("REQUEST_INSTANCE_ID",value[2]);
+		
+		builder.save();
+		Area.append(formatter1.format(new Date())+"Parameter File updated with Service B output value \n");
+		
+	
+	 
+ }
+ 
+public static void Parameter_Update_Hedis_Member_Detail(String Path,String[] value) throws ConfigurationException{
+	 
+	 
+	 Parameters params = new Parameters();
+		FileBasedConfigurationBuilder<FileBasedConfiguration> builder =
+		    new FileBasedConfigurationBuilder<FileBasedConfiguration>(PropertiesConfiguration.class)
+		    .configure(params.properties()
+		        .setFileName(Path));
+		Configuration config = builder.getConfiguration();
+	
+		config.setProperty("REQUEST_INSTANCE_ID",value[0]);
+		
+		builder.save();
+		Area.append(formatter1.format(new Date())+"Parameter File updated with Service B output value \n");
+		
+	
+	 
+ }
+
+public static void Parameter_Update_Hedis_Request_id(String Path,String[] value) throws ConfigurationException{
+	 
+	 
+	 Parameters params = new Parameters();
+		FileBasedConfigurationBuilder<FileBasedConfiguration> builder =
+		    new FileBasedConfigurationBuilder<FileBasedConfiguration>(PropertiesConfiguration.class)
+		    .configure(params.properties()
+		        .setFileName(Path));
+		Configuration config = builder.getConfiguration();
+	
+		config.setProperty("REQUEST_CONFIGURATION_ID",value[0]);
+		config.setProperty("REQUEST_INSTANCE_ID",value[0]);
+		
+		builder.save();
+		Area.append(formatter1.format(new Date())+"Parameter File updated with Service B output value \n");
+		
+	
+	 
+}
+  
+  public static  void call_prop() throws IOException, InterruptedException{
+		Temp_Value=Jframe_fun();
+		
+		for(int i=0;i<=50000;i++){
+			
+			if(!(Strings.isNullOrEmpty(Temp_Value[0])) && !(Strings.isNullOrEmpty(Temp_Value[1])) && !(Strings.isNullOrEmpty(Temp_Value[2])) && !(Strings.isNullOrEmpty(Temp_Value[3]))){
+				
+			
+				Username=Temp_Value[0];
+				pwd=Temp_Value[1];
+				Param_Path=Temp_Value[2];
+				Report_Type=Temp_Value[3];
+				break;
+			}
+			Thread.sleep(1000);
+		}
+		
+		new Result_Console();
+		
+		
+		
+		
+	}
+  
+  public static String Finder(String Report_Type,String vari) throws IOException{
+		
+		String val=null;
+		Data_Collection=readXLSX("Data_Collection.xlsx","Data");
+		for(int i=1;i<Data_Collection[0].length;i++){
+		
+		 if(Data_Collection[0][i].equalsIgnoreCase(Report_Type)){
+			 
+			 if(Data_Collection[1][i].equalsIgnoreCase(vari)){
+				 
+				 val=Data_Collection[2][i];
+				 break;
+				 
+			 }
+		 }	 
+			
+		}
+		
+		return val;
+	}
+  
+  
+  public static void Create_workbook_Sheets() throws IOException{
+	  
+	    Create_Book(Result_File);
+		Create_Sheet(Result_File,Expected);
+		Create_Sheet(Result_File,Actual);
+		Create_Sheet(Result_File,Count_Report);
+		Create_Sheet(Result_File,Missing_Record);
+		Create_Sheet(Result_File,Data_Mismatch);
+		Create_Sheet(Result_File,Summary);
+	  
+	  
+  }
+  
+  
+  public static void Count_Validation() throws IOException{
+	  
+	    int act=Actual_Data[0].length-1;
+	    int exp=Expected_Data[0].length-1;
+	    String act_string= String.valueOf(act);
+	    String exp_string= String.valueOf(exp);
+	    
+	    if(exp==act){
+			Count_Mismatch_Flag=false;
+		}
+		else{
+			Count_Mismatch_Flag=true;
+		}
+	  
+	  
+	    Area.append(formatter1.format(new Date())+"Total Data in Query Generated report - "+exp+" \n");
+	    writeBody_H(Result_File,Count_Report,"Actual Count from Query",0,0,1);
+		writeBody(Result_File,Count_Report,exp_string,1,0,0);
+		
+		Area.append(formatter1.format(new Date())+"Total Data in Actual report - "+act+" \n");
+		writeBody_H(Result_File,Count_Report,"Expected Count From report",0,1,1);
+		writeBody(Result_File,Count_Report,act_string,1,1,0);
+	  
+	  
+	  
+  }
+  
+  public void Missing_Record() throws IOException{
+	  
+	   String[][] Expected_Bulk=null;
+	    String[] Expected_Convert;
+	    
+	    int col_length=Keyvalue_Column.length+1;
+	    int final_count;
+	    ArrayList<String> Unmatched_Exp = new ArrayList<String>();
+		
+		boolean flag=false;
+		int row=0;
+	
+		writeBody_H(Result_File,Missing_Record,"Error Desc",0,row,1);
+		
+		
+        for(int aa=0;aa<Keyvalue_Column.length;aa++){
+        	
+        		writeBody_H(Result_File,Missing_Record,Expected_Data[Keyvalue_Column[aa]][0],aa+1,row,0);
+			
+			
+		}
+	
+		row=row+1;
+		
+		for(int i=1;i<Expected_Data[0].length;i++){
+			flag=false;
+			
+			for(int j=1;j<Actual_Data[0].length;j++){
+			
+				if(Key_Column_match(Expected_Data,Actual_Data,i,j)){
+					
+					flag=true;
+					Expected_Index[i]="Matched";
+					Actual_Index[j]="Matched";
+					Data_Index.put(i,j);
+					break;
+					
+				}	
+			
+		}
+			if(flag){
+				
+			}
+			else{
+				
+				Expected_Index[i]="UnMatched";
+				
+				Expected_Missing_Flag=true;
+				
+				
+			}
+		
+			
+		
+	}
+		
+		 for(int cc=1;cc<Actual_Index.length;cc++){
+			 if(Strings.isNullOrEmpty(Actual_Index[cc])){
+				 Actual_Missing_Flag=true;
+				 break;
+				 
+			 }
+			 
+		 }
+		
+		
+		
+		  if(Expected_Missing_Flag){
+		
+		   for(int bb=1;bb<Expected_Index.length;bb++){
+			
+			if(Expected_Index[bb].equalsIgnoreCase("UnMatched")){
+				
+				Unmatched_Exp.add("Present in Expected But not in Actual");
+	            for(int k=0;k<Keyvalue_Column.length;k++){
+					
+	            	Unmatched_Exp.add(Expected_Data[Keyvalue_Column[k]][bb]);
+						
+				}
+				
+			}	
+		}
+		  }
+		  
+		  if(Actual_Missing_Flag){
+		   
+		   for(int cc=1;cc<Actual_Index.length;cc++){
+				
+				if(Strings.isNullOrEmpty(Actual_Index[cc])){
+					
+					Unmatched_Exp.add("Present in Actual But not in Expected");
+		            for(int k=0;k<Keyvalue_Column.length;k++){
+						
+		            	Unmatched_Exp.add(Actual_Data[Keyvalue_Column[k]][cc]);
+							
+					}
+					
+				}	
+			}
+		  }
+		   
+		   if(Unmatched_Exp.size()>0){
+		   
+		   final_count= Unmatched_Exp.size()/col_length;
+		   Expected_Convert = (String[]) Unmatched_Exp.toArray(new String[Unmatched_Exp.size()]);
+		   Expected_Bulk=new String[col_length][final_count+1];
+		   
+		   int ini_count=0;
+		   for(int v=1;v<final_count+1;v++){
+				 
+				 for(int w=0;w<col_length;w++){
+					 
+					 Expected_Bulk[w][v]=Expected_Convert[ini_count];
+					 ini_count++;
+				 }
+			 }
+		   
+		   Bulk_Writer(Result_File,Missing_Record,Expected_Bulk);
+		      
+		  }
+		
+		
+	}
+  
+  
+  public boolean Key_Column_match(String[][] a,String[][] b,int c,int d) throws IOException{
+	  
+	  int size=Keyvalue_Column.length;
+	  int count=0;
+	  
+	  for(int i=0;i<Keyvalue_Column.length;i++){
+		  
+		
+		  
+		  if(a[Keyvalue_Column[i]][c].equalsIgnoreCase(b[Keyvalue_Column[i]][d])){
+			 
+			  
+			  count++;
+		  }
+		  
+		  
+	  }
+	  
+	
+	  
+	  if(count==size){
+		  
+		  return true;
+	  }
+	  else
+	  {
+		  return false;
+	  }
+	  
+	  
+  }
+  
+  public void Data_Validation() throws IOException{
+	  
+		boolean flag=true;
+		String[] status=new String[Expected_Data.length];
+		int row_line=0;
+		String[] Expected_Convert;
+		int final_count;
+		ArrayList<String> Unmatched_Exp = new ArrayList<String>();
+		int a=Column_Name.length-Keyvalue_Column.length;
+		int Col_count=Keyvalue_Column.length + (a*3);
+		String[][] Mismatch_Data=null;
+		
+		for(int aa=0;aa<Keyvalue_Column.length;aa++){
+			
+			if(aa==0){
+			
+			writeBody_H(Result_File,Data_Mismatch,Expected_Data[Keyvalue_Column[aa]][0],aa,row_line,1);
+			}
+			else{
+				writeBody_H(Result_File,Data_Mismatch,Expected_Data[Keyvalue_Column[aa]][0],aa,row_line,0);
+			}
+			
+		}
+		
+          int ll=Keyvalue_Column.length;
+		
+		  for(int bb=0;bb<Expected_Data.length;bb++){
+			  
+			  if(Key_Column(bb)){
+				 
+				    writeBody_H(Result_File,Data_Mismatch,Expected_Data[bb][0]+"_Expected",ll,row_line,0);
+					ll++;
+					writeBody_H(Result_File,Data_Mismatch,Expected_Data[bb][0]+"_Actual",ll,row_line,0);
+					ll++;
+					writeBody_H(Result_File,Data_Mismatch,Expected_Data[bb][0]+"_Status",ll,row_line,0);
+					ll++;
+				  
+			  }
+			
+			
+			
+		}
+		  
+			row_line++;
+			
+			for(int i=1;i<Expected_Data[0].length;i++){
+				 flag=true;
+				
+				if(Data_Index.containsKey(i)){
+					
+					System.out.println("Inside i :"+i);
+					
+					System.out.println("Key value of i :"+Data_Index.get(i));
+					
+				  for(int cc=0;cc<Expected_Data.length;cc++){
+					  
+					  if(Key_Column(cc)){
+						  
+						  
+						  if(!(Expected_Data[cc][i].equalsIgnoreCase(Actual_Data[cc][Data_Index.get(i)]))){
+							  
+							  status[cc]="F";
+							  flag=false;
+							  
+							  
+						  }
+						  else{
+								status[cc]="T";
+							}
+						  
+					  }
+				  
+				  }
+				  
+				  
+				  if(flag){
+						
+					}
+					else{
+						
+						System.out.println("Inside else of i :"+i);
+						
+						Data_Mismatch_Flag=true;
+						for(int f=0;f<Keyvalue_Column.length;f++){
+							
+							Unmatched_Exp.add(Expected_Data[Keyvalue_Column[f]][i]);
+										
+						}
+						
+						for(int k=0;k<Expected_Data.length;k++){
+							
+							  if(Key_Column(k)){
+								  
+								  Unmatched_Exp.add(Expected_Data[k][i]);
+								  Unmatched_Exp.add(Actual_Data[k][Data_Index.get(i)]);
+								  
+									if(status[k].equalsIgnoreCase("F")){
+										Unmatched_Exp.add("Mismatch");
+										
+										
+									}
+									else{
+										Unmatched_Exp.add("Match");
+									}  
+								  
+							  }
+							  
+						}
+								
+					}
+				  
+				  status=new String[Expected_Data.length]; 
+				 
+				  
+			}
+			}
+			
+		
+			   final_count= Unmatched_Exp.size()/Col_count;
+			   
+			   System.out.println("Final count:"+final_count);
+			   Expected_Convert = (String[]) Unmatched_Exp.toArray(new String[Unmatched_Exp.size()]);
+			   Mismatch_Data=new String[Col_count][final_count+1];
+			   
+			   int ini_count=0;
+			   for(int v=1;v<final_count+1;v++){
+					 
+					 for(int w=0;w<Col_count;w++){
+						 
+						 Mismatch_Data[w][v]=Expected_Convert[ini_count];
+						 ini_count++;
+					 }
+				 }
+			
+			
+			   Bulk_Writer(Result_File,Data_Mismatch,Mismatch_Data);
+			
+	  
+  }
+  
+  public boolean Key_Column(int c) throws IOException{
+	  
+	
+	  boolean flag=true;
+	  for(int i=0;i<Keyvalue_Column.length;i++){
+		  
+		  if(Keyvalue_Column[i]==c){
+			  
+			  flag=false;
+		  }
+		  
+		  
+	  }
+	  
+	  return flag;
+	  
+	  
+  }
+  
+  
+  public void Data_Match() throws IOException{
+		
+		
+		   if(!(Count_Mismatch_Flag) && !(Actual_Missing_Flag) && !(Expected_Missing_Flag)){
+			   
+			   
+			   Create_Sheet(Result_File,Data_Compare);
+			   
+			   for(int i=0;i<Column_Name.length;i++){
+				   
+				   if(i==0){
+				   
+					   writeBody_H(Result_File,Data_Compare,Column_Name[i],i,0,1);
+				   }
+				   else{
+					   writeBody_H(Result_File,Data_Compare,Column_Name[i],i,0,0); 
+				   }
+				   
+			   }
+			   
+			    Bulk_Writer(Result_File,Data_Compare,Expected_Data);
+			    
+			    Compare_Sheets(Actual_Data,Expected_Data,Result_File,Data_Compare);
+			   
+		   }
+		
+		
+	}
+
+
+	public void Summary_sheet() throws IOException{	
+		
+		 writeBody_H(Result_File,Summary,"Type",0,0,1);
+		 writeBody_H(Result_File,Summary,"Result",1,0,0);
+		
+		if(Count_Mismatch_Flag)
+		{
+		 writeBody(Result_File,Summary,"Count Match",0,1,1);
+		 writeBody(Result_File,Summary,"Fail",1,1,0);
+		}
+		else{
+			writeBody(Result_File,Summary,"Count Match",0,1,1);
+			writeBody(Result_File,Summary,"Pass",1,1,0);
+			
+		}
+		
+		if(Expected_Missing_Flag || Actual_Missing_Flag)
+		{
+		 writeBody(Result_File,Summary,"Missing Record",0,2,1);
+		 writeBody(Result_File,Summary,"Fail",1,2,0);
+		}
+		else{
+			writeBody(Result_File,Summary,"Missing Record",0,2,1);
+			writeBody(Result_File,Summary,"Pass",1,2,0);
+			
+		}
+		
+		if(Data_Mismatch_Flag)
+		{
+		 writeBody(Result_File,Summary,"Data Mismatch",0,3,1);
+		 writeBody(Result_File,Summary,"Fail",1,3,0);
+		}
+		else{
+			writeBody(Result_File,Summary,"Data Mismatch",0,3,1);
+			writeBody(Result_File,Summary,"Pass",1,3,0);
+			
+		}
+		
+		
+	}
+
+
+	
+	public void File_Copy(String Src,String Desc) throws InterruptedException, IOException{
+		File f1= new File(Src);
+		File f2= new File(Desc);
+		FileUtils.copyFile(f1, f2);
+
+	}
+			
+			
+
+     
+
+
+}
