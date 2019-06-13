@@ -1,0 +1,46 @@
+package com.report.validation;
+
+import java.io.IOException;
+
+import java.sql.SQLException;
+import java.text.ParseException;
+import java.util.Date;
+
+import org.apache.commons.configuration2.ex.ConfigurationException;
+
+import com.report.utilities.General_Wrapper;
+
+import jxl.read.biff.BiffException;
+
+public class Launch_Main extends General_Wrapper{
+
+	public static void main(String[] args) throws IOException, InterruptedException, ClassNotFoundException, SQLException, ConfigurationException, BiffException, ParseException {
+	
+		call_prop();
+	
+		
+       if(Report_Type.equalsIgnoreCase("HEDIS Rate Report by Reporting Entity")){
+    	   
+    	    Area.append(formatter1.format(new Date())+"HEDIS Rate Report by Reporting Entity Validation Begin \n");
+			
+			new HEDIS_Reporting_Entity().Caller();
+		}
+       
+       if(Report_Type.equalsIgnoreCase("HEDIS Member Detail Report")){
+    	   
+   	    Area.append(formatter1.format(new Date())+"HEDIS Member Detail Report Validation Begin \n");
+			
+			new HEDIS_Member_Detail().Caller();
+		}
+       
+       if(Report_Type.equalsIgnoreCase("HEDIS Rate Report")){
+    	   
+      	    Area.append(formatter1.format(new Date())+"HEDIS Rate Report Validation Begin \n");
+   			
+   			new HEDIS_Rate_Report().Caller();
+   		}
+
+
+	}
+
+}
