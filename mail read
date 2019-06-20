@@ -1,0 +1,94 @@
+import java.io.FileReader;
+import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Properties;
+import java.util.TimeZone;
+
+import javax.mail.Folder;
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.NoSuchProviderException;
+import javax.mail.Session;
+import javax.mail.Store;
+import javax.swing.JOptionPane;
+
+public class Read {
+	
+	
+	static SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    static String date1 ;
+    public static Date latest;
+    Date date2 ;
+    public static int count=0;
+    public static String Host;
+    public static String User;
+    public static String PWD;
+    public static String Subject;
+
+	public static void main(String[] args) throws MessagingException, IOException, ParseException {
+		Properties props = new Properties();
+		FileReader reader=new FileReader("C:\\Mail_Read\\Input.properties");  
+		Properties Input = new Properties();
+		Input.load(reader); 
+		Host=Input.getProperty("host");
+		User=Input.getProperty("User_Mail");
+		PWD=Input.getProperty("Password");
+		Subject=Input.getProperty("subject");
+		props.put("mail.smtp.host",Host);
+		props.put("mail.smtp.socketFactory.port", 465);
+		props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+		props.put("mail.smtp.auth", true);
+		props.put("mail.smtp.port", 465);
+		sdf1.setTimeZone(TimeZone.getTimeZone("IST"));
+		
+	        Session session = Session.getDefaultInstance(props, null);
+	        
+	        Store store = session.getStore("imaps");
+	        store
+	                .connect(Host,User,
+	                		PWD);
+	        Folder inbox = store.getFolder("inbox");
+	        inbox.open(Folder.READ_WRITE);
+	        int messageCount = inbox.getMessageCount();
+	        System.out.println("Total Messages" + messageCount);
+	      
+	        Message[] messages = inbox.getMessages();
+	        int n=messages.length;
+	 
+	        for (int i = 0; i < n; i++) {
+	            Message message = messages[i];
+	            
+	            if(message.getSubject().contains(Subject)) {
+	            	count++;
+	           
+	            //System.out.println("Subject: " + message.getSubject());
+	           // System.out.println("From: " + message.getFrom()[0]);
+	            date1 = sdf1.format(message.getReceivedDate());
+	            System.out.println("date " + date1);
+	            Date temp=sdf1.parse(date1);
+	            if(count==1) {
+	            	latest=temp;
+	            }
+	            else {
+	            	
+	            	if (temp.compareTo(latest) > 0) {
+	            		latest=temp;
+	    	        } 
+	            	
+	            }
+	            
+	            }
+	         }
+	        
+	        System.out.println("Total Email received for particular subject :"+count);
+	        System.out.println("Latest Mail Received on ....:"+sdf1.format(latest));
+	        inbox.close(true);
+	        System.out.println("Done....");
+	        store.close();
+			JOptionPane.showMessageDialog(null,"Latest Mail Received on   :"+sdf1.format(latest)+ "\nTotal Email received for particular subject :" +count);
+
+	}
+
+}
