@@ -1,0 +1,366 @@
+
+<%@ page import = "java.text.*" %>
+<%@ page import = "java.util.*" %>
+<%@ page import = "java.io.*" %>
+<%@ page import = "Utilities.General_Functions1" %>
+
+<%@ page import = "javax.swing.filechooser.FileSystemView" %> 
+
+<%!
+String Src_DB,Src_Query,Src_Username,Src_Password,Tgt_DB,Tgt_Query,Tgt_Username,Tgt_Password,Result_File,Key_Column,Result_File_path,Input_File_Path;
+SimpleDateFormat formatter = new SimpleDateFormat("dd_MM_yyyy_hh_mm_ss");
+
+  HashMap<Integer, Long> Column_Mismatch;
+  String fullkey,Selected_key;
+  String[] full;
+  String[] half;
+  String key=""; 
+  String Reload;
+  String FTP_File,Tgt_FTP_File;
+  String FTP_bat_path,Tgt_FTP_bat_path;
+  String Final_Text_File,Tgt_Final_Text_File;
+ 
+  HashMap<Integer, String> Table_column;
+  long startTime1,stopTime1,elapsedTime1;
+%>
+
+<%
+
+long startTime = System.currentTimeMillis();
+Result_File= (String)session.getAttribute("Result_Folder")+"Validation_Result_"+formatter.format(new Date())+".xlsx";
+Result_File_path=(String)session.getAttribute("Result_File_path");
+FTP_File=(String)session.getAttribute("Result_Folder")+"FTP_"+formatter.format(new Date())+".txt";
+FTP_bat_path=(String)session.getAttribute("Result_Folder")+"FTP_bat_"+formatter.format(new Date())+".bat";
+Final_Text_File=(String)session.getAttribute("Result_Folder")+"Final_FIle_"+formatter.format(new Date())+".txt";
+
+Tgt_FTP_File=(String)session.getAttribute("Result_Folder")+"_Tgt_FTP_"+formatter.format(new Date())+".txt";
+Tgt_FTP_bat_path=(String)session.getAttribute("Result_Folder")+"Tgt_FTP_bat_"+formatter.format(new Date())+".bat";
+Tgt_Final_Text_File=(String)session.getAttribute("Result_Folder")+"Tgt_Final_FIle_"+formatter.format(new Date())+".txt";
+
+half=request.getParameterValues("testSelect1");
+	
+	for(int g=0;g<half.length;g++){
+		
+	if(g==0){
+		key=half[g];
+	}
+	else{
+			
+			key=key+","+half[g];
+			
+	}
+		
+	
+}
+
+	System.out.println("ggggggggggggggggggggg :" +key);
+General_Functions1 obj=new General_Functions1();
+
+if(session.getAttribute("Src_DB").toString().equalsIgnoreCase("Hive")){
+		
+obj.setvalue_Src_Hive(session.getAttribute("Src_DB").toString(), session.getAttribute("Src_Query_Hive").toString(), session.getAttribute("Src_Username_Hive").toString(), session.getAttribute("Src_Password_Hive").toString());
+
+}
+
+if(session.getAttribute("Src_DB").toString().equalsIgnoreCase("SQL Server")){ 
+	
+obj.setvalue_Src_Sql_Server(session.getAttribute("Src_DB").toString(), session.getAttribute("Src_Query_SQL").toString(), session.getAttribute("Src_Username_SQL").toString(), session.getAttribute("Src_Password_SQL").toString(),session.getAttribute("Src_Server_SQL").toString(),session.getAttribute("Src_DBname_SQL").toString());
+
+} 
+
+if(session.getAttribute("Src_DB").toString().equalsIgnoreCase("DB2")){
+	
+obj.setvalue_Src_DB2(session.getAttribute("Src_DB").toString(), session.getAttribute("Src_Query_DB2").toString(), session.getAttribute("Src_Username_DB2").toString(), session.getAttribute("Src_Password_DB2").toString(),session.getAttribute("Src_DBname_DB2").toString(),session.getAttribute("Src_Port_DB2").toString(),session.getAttribute("Src_Host_DB2").toString());
+
+}
+
+if(session.getAttribute("Src_DB").toString().equalsIgnoreCase("Netezza")){
+	
+obj.setvalue_Src_Netezza(session.getAttribute("Src_DB").toString(), session.getAttribute("Src_Query_Netezza").toString(), session.getAttribute("Src_Username_Netezza").toString(), session.getAttribute("Src_Password_Netezza").toString(),session.getAttribute("Src_DBname_Netezza").toString(),session.getAttribute("Src_Server_Netezza").toString());
+
+}
+
+if(session.getAttribute("Src_DB").toString().equalsIgnoreCase("Excel")){
+	
+obj.setvalue_Src_Excel(session.getAttribute("Src_DB").toString(), session.getAttribute("File_Path_Source").toString());
+
+}
+
+if(session.getAttribute("Src_DB").toString().equalsIgnoreCase("CSV") || session.getAttribute("Src_DB").toString().equalsIgnoreCase("Delimiter")){
+	
+	
+obj.setvalue_Src_CSV(session.getAttribute("Src_DB").toString(), session.getAttribute("File_Path_Source").toString(),session.getAttribute("Src_EOR").toString(),session.getAttribute("Src_Symbol").toString(),session.getAttribute("Src_Column_Name").toString());
+
+}
+
+if(session.getAttribute("Src_DB").toString().equalsIgnoreCase("Mainframe")){  
+	
+obj.setvalue_Src_Mainframe(session.getAttribute("Src_DB").toString(), session.getAttribute("Src_Username_Mainframe").toString(), session.getAttribute("Src_Password_Mainframe").toString(),session.getAttribute("Src_Host_Mainframe").toString(),session.getAttribute("Src_Filename_Mainframe").toString(),FTP_File,FTP_bat_path,session.getAttribute("Copybook_Source").toString(),(String)session.getAttribute("Result_Folder").toString(),Final_Text_File);
+
+}
+
+if(session.getAttribute("Tgt_DB").toString().equalsIgnoreCase("Mainframe")){  
+	
+obj.setvalue_Tgt_Mainframe(session.getAttribute("Tgt_DB").toString(), session.getAttribute("Tgt_Username_Mainframe").toString(), session.getAttribute("Tgt_Password_Mainframe").toString(),session.getAttribute("Tgt_Host_Mainframe").toString(),session.getAttribute("Tgt_Filename_Mainframe").toString(),Tgt_FTP_File,Tgt_FTP_bat_path,session.getAttribute("Copybook_Target").toString(),(String)session.getAttribute("Result_Folder").toString(),Tgt_Final_Text_File);
+
+}
+
+
+
+if(session.getAttribute("Tgt_DB").toString().equalsIgnoreCase("Hive")){
+		
+obj.setvalue_Tgt_Hive(session.getAttribute("Tgt_DB").toString(), session.getAttribute("Tgt_Query_Hive").toString(), session.getAttribute("Tgt_Username_Hive").toString(), session.getAttribute("Tgt_Password_Hive").toString());
+
+}
+
+if(session.getAttribute("Tgt_DB").toString().equalsIgnoreCase("SQL Server")){
+	
+obj.setvalue_Tgt_Sql_Server(session.getAttribute("Tgt_DB").toString(), session.getAttribute("Tgt_Query_SQL").toString(), session.getAttribute("Tgt_Username_SQL").toString(), session.getAttribute("Tgt_Password_SQL").toString(),session.getAttribute("Tgt_Server_SQL").toString(),session.getAttribute("Tgt_DBname_SQL").toString());
+
+}
+
+if(session.getAttribute("Tgt_DB").toString().equalsIgnoreCase("DB2")){
+	
+obj.setvalue_Tgt_DB2(session.getAttribute("Tgt_DB").toString(), session.getAttribute("Tgt_Query_DB2").toString(), session.getAttribute("Tgt_Username_DB2").toString(), session.getAttribute("Tgt_Password_DB2").toString(),session.getAttribute("Tgt_DBname_DB2").toString(),session.getAttribute("Tgt_Port_DB2").toString(),session.getAttribute("Tgt_Host_DB2").toString());
+
+}
+
+if(session.getAttribute("Tgt_DB").toString().equalsIgnoreCase("Netezza")){
+	
+obj.setvalue_Tgt_Netezza(session.getAttribute("Tgt_DB").toString(), session.getAttribute("Tgt_Query_Netezza").toString(), session.getAttribute("Tgt_Username_Netezza").toString(), session.getAttribute("Tgt_Password_Netezza").toString(),session.getAttribute("Tgt_DBname_Netezza").toString(),session.getAttribute("Tgt_Server_Netezza").toString());
+
+}
+
+if(session.getAttribute("Tgt_DB").toString().equalsIgnoreCase("Excel")){
+	
+obj.setvalue_Tgt_Excel(session.getAttribute("Tgt_DB").toString(), session.getAttribute("File_Path_Target").toString());
+
+}
+
+if(session.getAttribute("Tgt_DB").toString().equalsIgnoreCase("CSV") || session.getAttribute("Tgt_DB").toString().equalsIgnoreCase("Delimiter")){
+	
+obj.setvalue_Tgt_CSV(session.getAttribute("Tgt_DB").toString(), session.getAttribute("File_Path_Target").toString(),session.getAttribute("Tgt_EOR").toString(),session.getAttribute("Tgt_Symbol").toString(),session.getAttribute("Tgt_Column_Name").toString());
+
+}
+
+obj.set_Key_Value(key,Result_File);
+
+if(session.getAttribute("Src_DB").toString().equalsIgnoreCase("Excel")){
+	obj.Source_caller_Excel();
+}
+else if(session.getAttribute("Src_DB").toString().equalsIgnoreCase("CSV") || session.getAttribute("Src_DB").toString().equalsIgnoreCase("Delimiter")){
+	obj.Source_Delimiter_Exe(); 
+}
+else if(session.getAttribute("Src_DB").toString().equalsIgnoreCase("Mainframe")){
+	obj.Source_Mainframe_Exe(); 
+}
+
+else{
+	obj.Source_caller();
+}
+
+if(session.getAttribute("Tgt_DB").toString().equalsIgnoreCase("Excel")){
+	obj.Target_caller_Excel();
+}
+else if(session.getAttribute("Tgt_DB").toString().equalsIgnoreCase("CSV") || session.getAttribute("Tgt_DB").toString().equalsIgnoreCase("Delimiter")){
+	obj.Target_Delimiter_Exe(); 
+}
+else if(session.getAttribute("Tgt_DB").toString().equalsIgnoreCase("Mainframe")){
+	obj.Target_Mainframe_Exe(); 
+}
+
+else{
+	obj.Target_caller();
+}
+
+obj.Common_caller();
+
+
+System.out.println("22");
+obj.File_Copy(Result_File,Result_File_path);
+Column_Mismatch=new HashMap<Integer,Long>(obj.Column_Mismatch);
+Table_column=new HashMap<Integer, String>(obj.Table_column);
+long stopTime = System.currentTimeMillis();
+long elapsedTime = stopTime - startTime;
+System.out.println("Function 1 time taken :"+elapsedTime/1000);
+
+%>
+
+<!DOCTYPE html> 
+<html>
+
+<head>
+<script>
+
+  function preventBack(){window.history.forward();}
+  setTimeout("preventBack()", 0);
+  window.onunload=function(){null};
+</script>
+
+<title>Result</title>
+<link rel="stylesheet" href="CSS/style-Home.css"> 
+<link rel="stylesheet"  href="CSS/Form.css">
+<link rel="stylesheet"  href="CSS/Radio.css">
+<link rel="stylesheet"  href="CSS/Alltc.css">
+<link rel="stylesheet"  href="CSS/Button.css">
+
+
+<style>
+body {
+    text-align: center;
+}
+#myHiddenPage { 
+    display: none;
+}
+</style>
+</head>
+<body>
+
+
+<H2><center>Data Validator Dashboard<HR></center></H2>
+<section>
+<div class="tbl-header">
+<table cellpadding="0" cellspacing="0" border="0">
+      <thead>
+        <tr>
+
+<th>Download the Result File </th> 
+<th><a class="myButton" href="ValidationResult.xlsx" download="ValidationResult.xlsx">Download</a></th> 
+</tr>
+</thead>
+</table>
+</div>
+</section>
+
+<H2><center>Count Validation Summary<HR></center></H2>
+<section>
+ <div class="tbl-header">
+<table cellpadding="0" cellspacing="0" border="0">
+      <thead>
+        <tr>
+
+<th>Total Source count</th>
+<th><%= obj.Total_Src_Count %></th>
+</tr>
+        <tr>
+
+<th>Total Target count</th>
+<th><%= obj.Total_Tgt_Count %></th>
+</tr>
+<tr>
+
+<th>Total Source count without Duplicate</th>
+<th><%= obj.Total_Src_Count_no_dup %></th>
+</tr>
+        <tr>
+
+<th>Total Target count without Duplicate</th>
+<th><%= obj.Total_Tgt_Count_no_dup %></th>
+</tr>
+</thead>
+</table>
+</div>
+</section>
+<H2><center>Duplicate Record Summary <HR></center></H2>
+<section>
+ <div class="tbl-header">
+<table cellpadding="0" cellspacing="0" border="0">
+      <thead>
+        <tr>
+
+<th>Source Duplicate</th>
+<th><%= obj.Src_duplicate_count %></th>
+</tr>
+        <tr>
+
+<th>Target Duplicate</th>
+<th><%= obj.Tgt_duplicate_count %></th>
+</tr>
+
+</thead>
+</table>
+</div>
+</section>
+
+<H2><center>Missing Record Summary <HR></center></H2>
+<section>
+ <div class="tbl-header">
+<table cellpadding="0" cellspacing="0" border="0">
+      <thead>
+        <tr>
+
+<th>Source Missing</th>
+<th><%= obj.Src_missing_count %></th>
+</tr>
+        <tr>
+
+<th>Target Missing</th>
+<th><%= obj.Tgt_missing_count %></th>
+</tr>
+
+</thead>
+</table>
+</div>
+</section>
+
+<H2><center>Data Mismatch Record Summary <HR></center></H2>
+<section>
+ <div class="tbl-header">
+<table cellpadding="0" cellspacing="0" border="0">
+      <thead>
+        <tr>
+
+<th>Total Data Mismatch Record</th>
+<th><%= obj.Data_mismatch_count %></th>
+</tr>
+        <tr>
+
+<th>Column Wise Mismatch Count</th>
+<th><%= "Count#" %></th>
+</tr>
+
+</thead>
+</table>
+</div>
+
+<div class="tbl-content">
+  
+    <table cellpadding="0" cellspacing="0" border="0">
+      <tbody>
+    
+<% for(int i=1;i<=Column_Mismatch.size();i++){
+	
+	if(Column_Mismatch.get(i)>0)
+	{%>
+
+
+        
+    	<tr align="center">
+       <td><%= Table_column.get(i) %></td>
+    	<td><%= Column_Mismatch.get(i) %></td>
+    	  
+</tr>
+
+   <% } }%>
+  
+</tbody>
+ </table> 
+
+ </div>
+
+</section>
+<!--
+<script>
+$(funtion() {
+    $('#myHiddenPage').load('<%=Reload%>');
+});
+</script>
+
+-->
+<script src="Scripts/index_Home.js"></script> 
+<script src="Scripts/AllTest.js"></script>
+<script src="Scripts/jquery-3.2.1.min.js"></script> 
+
+
+</body>
+</html>
