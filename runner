@@ -1,0 +1,7 @@
+cd\
+pushd \\MIDP-SFS-010\checogdata\SIT Data\SIT-Informatics\006-General\Automation_Utilities\DB2_Validator_Script\DB2_Validator
+set path=C:\Program Files\Java\jdk18\bin;
+set classpath=.\lib\*;
+javac XML_Generator.java
+java XML_Generator Count_Validation CLAIM_ADAM_MDL_1
+java -cp ".\bin;.\lib\*;" org.testng.TestNG Testng.xml
