@@ -1,0 +1,1223 @@
+package com.db2.utilities;
+
+import java.awt.AWTException;
+import java.awt.Rectangle;
+import java.awt.Robot;
+import java.awt.Toolkit;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.logging.FileHandler;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
+
+import javax.imageio.ImageIO;
+
+import org.apache.poi.ss.usermodel.BorderStyle;
+import org.apache.poi.ss.usermodel.DataFormatter;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.ss.usermodel.IndexedColors;
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFCellStyle;
+import org.apache.poi.xssf.usermodel.XSSFFont;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.openqa.selenium.WebDriver;
+
+import com.google.common.base.Strings;
+import com.relevantcodes.extentreports.ExtentReports;
+import com.relevantcodes.extentreports.ExtentTest;
+import com.relevantcodes.extentreports.LogStatus;
+
+public class General_Wrapper extends Support1 {
+	
+	public static  String driverName = "com.ibm.db2.jcc.DB2Driver";
+    public static  Connection con;
+    public static  Statement stmt;
+    public ResultSet res,res1,res2, res3,res4, res5,res6, res7,res8, res9,res10;
+    
+    public static WebDriver driver;
+    public static Logger logger ;
+    public static FileHandler fh;
+    
+    public static String Result_File;
+    public static String[][] mydata;
+    
+    public static String[] Temp_Src_Query,Temp_Tgt_Query;
+    public static  String Username,pwd,Excel_Path,Result_Path,Add_Key,Sheet_Name,Src_Query,Tgt_Query,Key_Column,Target_TB,Target_Table_Name;
+    public static  String host,port,DB;
+    public static  boolean Overall_Result=true;
+    public static  boolean TP_Status=false;
+    public static int[] Keyvalue_Column;
+    public  boolean Non_Primary=true;
+    
+ 
+	
+	public   HashSet<String> Src_data = new HashSet<String>(); 
+	public   HashSet<String> Tgt_data = new HashSet<String>(); 
+	
+	public   HashMap<String, String> Src_Map =new HashMap<String, String>();
+	public   HashMap<String, String> Tgt_Map =new HashMap<String, String>();
+	
+    public static HashMap<Integer, Integer> Data_Index =new HashMap<Integer, Integer>();
+	public static  HashMap<Integer, Long> Column_Mismatch =new HashMap<Integer, Long>();
+	public static  HashMap<Integer, String> Table_column =new HashMap<Integer, String>();
+	public static  HashMap<Integer, String> Table_column_key =new HashMap<Integer, String>();
+    
+    
+	//public static ExtentTest test;
+	//public ExtentReports extent;
+	public static String testCaseName;
+	public static String testDescription;
+	public static String category;
+	public static String authors;
+	public static String Job_ID,Mainframe_Status;
+
+    public static String[] Temp_Value;
+    public static String Source_Missing="Source Missing";
+    public static String Target_Missing="Target Missing";
+    public static String Count_Report="Count Summary";
+    public static String Source_Duplicate="Source Duplicate";
+    public static String Target_Duplicate="Target Duplicate";
+    public static String Data_Mismatch="Data Mismatch";
+    public static String Summary="Summary";
+    public static boolean Source_Missing_Flag=false;
+    public static boolean Target_Missing_Flag=false;
+    public static boolean Source_Duplicate_Flag=false;
+    public static boolean Target_Duplicate_Flag=false;
+    public static boolean Data_Mismatch_Flag=false;
+    public static boolean Count_Mismatch_Flag=false;
+    public static String[] Src_Column_Name,Tgt_Column_Name;
+    public static int Src_Column_Count,Tgt_Column_Count,Src_missing_count,Tgt_missing_count,Data_mismatch_count;
+
+    public static long Total_Src_Count,Total_Tgt_Count,Src_Missing_Count,Tgt_Missing_Count,Src_duplicate_count,Tgt_duplicate_count,Data_Mismatch_Count;
+    
+    public static String Data_Src_txt="",Data_Tgt_txt="";
+    public static  SimpleFormatter formatter;
+    public static  SimpleDateFormat formatter1;
+    
+   
+    
+    
+   public static void DB2_JDBC() throws ClassNotFoundException, SQLException{
+	   Class.forName(driverName);
+	   con = DriverManager.getConnection("jdbc:db2://"+host+":"+port+"/"+DB,Username,pwd);
+     stmt = con.createStatement();
+	   logger.info("* DB2 Connection Success  *");
+    	
+    }
+   
+   public static void DB2_JDBC_Close() throws ClassNotFoundException, SQLException{
+	   con.close();
+    	
+    }
+   
+  
+   
+   public boolean File_Exists(String Path){
+		 
+		 File files1 = new File(Path);
+	     if (files1.exists()) {
+	        return true;
+	         } else {
+	            return false;
+	         }
+	     
+		 
+	 }
+   
+  
+	
+	public static String[][] readXLSX(String Filepath,String Sheet) throws IOException{
+		File excel=new File(Filepath);
+		FileInputStream fis=new FileInputStream(excel);
+		String Value=null;
+		XSSFWorkbook book=new XSSFWorkbook(fis);
+		XSSFSheet ws=book.getSheet(Sheet);
+		XSSFCell cell;
+		
+		DataFormatter format=new DataFormatter();
+		int rowNum=ws.getLastRowNum()+1;
+		int colNum=ws.getRow(0).getLastCellNum();
+		
+		String[][] Parameter=new String[(colNum)][(rowNum)];
+		for(int i=0;i<rowNum;i++){
+			XSSFRow row=ws.getRow(i);
+			for(int j=0;j<colNum;j++){
+				
+				cell=row.getCell(j);
+				if(!(cell==null)){
+					Value=format.formatCellValue(cell);
+				}
+				else{
+					Value=null;
+				}
+				Parameter[j][i]=Value;
+			}
+			
+		}
+		book.close();
+		return Parameter;
+		
+	}
+	
+	public static boolean isStringEmpty(String input){
+        if(input.trim().length() == 0){
+            return true;
+        }
+        return false;
+    }
+	
+	public static boolean isStringNull(String input){
+	
+        if(input == null ){
+            return true;
+        }
+        return false;
+    }
+	
+public static void Create_Sheet(String Filepath,String Sheet) throws IOException{
+ 		
+ 		FileInputStream fis=new FileInputStream(Filepath);
+ 		XSSFWorkbook book=new XSSFWorkbook(fis);
+ 		XSSFSheet ws=book.createSheet(Sheet);
+ 		
+ 		if(Sheet.equalsIgnoreCase("Summary")){
+ 			book.setSheetOrder("Summary", 0);
+ 		}
+ 		fis.close();
+ 		FileOutputStream fo=new FileOutputStream(Filepath);
+ 		book.write(fo);
+ 		book.close();
+ 		fo.flush();
+ 		fo.close();
+ 		
+ 	}
+
+public static void Create_workbook_Sheets() throws IOException{
+	  
+    Create_Book(Result_File);
+	Create_Sheet(Result_File,Count_Report);
+	Create_Sheet(Result_File,Source_Duplicate);
+	Create_Sheet(Result_File,Target_Duplicate);
+	Create_Sheet(Result_File,Source_Missing);
+	Create_Sheet(Result_File,Target_Missing);
+	Create_Sheet(Result_File,Data_Mismatch);
+	Create_Sheet(Result_File,Summary);
+  
+  
+}
+ 	
+
+ 	
+ public static String Create_Book(String Filepath) throws IOException{
+ 	
+ 		String FP=Filepath;
+ 		XSSFWorkbook workbook = new XSSFWorkbook();
+ 	    FileOutputStream out = new FileOutputStream(new File(FP));
+ 	      workbook.write(out);
+ 	      out.close();
+ 	      return FP;
+ 			
+ 		}
+
+
+
+
+public void Key_Value_Split() {
+	
+	 String[] Keyvalue_Split=Key_Column.split(",");
+	  Keyvalue_Column=new int[Keyvalue_Split.length];
+	  for(int x=0;x<Keyvalue_Split.length;x++){
+	    	
+	    	Keyvalue_Column[x]=Integer.parseInt(Keyvalue_Split[x])-1;
+
+	    	
+	    }
+	 
+	
+}
+
+
+public static boolean Key_Column_identifier(int i) {
+	
+	 boolean test = false; 
+   for (int element : Keyvalue_Column) { 
+       if (element == i) { 
+           test = true; 
+           break; 
+       } 
+   }
+   
+   if(test) {
+  	 return true;
+  	
+   }
+   else
+  	 return false;
+	
+}
+
+public void Count_Validation() throws SQLException, IOException{
+	
+	try{
+		
+	
+	System.out.println("Count Validation Begins");
+	System.out.println("------------------------");
+	logger.info("********Count Validation Begins************");
+	
+	String SRC_Query="Select count (*) from ("+ Src_Query+" ) src";
+	String TGT_Query="Select count (*) from ("+ Tgt_Query+" ) src";
+	logger.info("Src Query - "+SRC_Query);
+	logger.info("Src Query - "+TGT_Query);
+	String SC=null;
+	String TC=null;
+	
+	res1 = stmt.executeQuery(SRC_Query);
+	System.out.println("Count Validation Processing........");
+
+		
+		while(res1.next())
+		{
+			
+			SC=res1.getString(1);
+			Total_Src_Count=Long.parseLong(SC);
+			
+			
+		}
+	
+		//reportStep_only("Source Count : "+Total_Src_Count,"INFO");
+		res2 = stmt.executeQuery(TGT_Query);
+		
+		while(res2.next())
+		{
+			
+			TC=res2.getString(1);
+			Total_Tgt_Count=Long.parseLong(TC);
+			
+		}
+		//reportStep_only("Target Count : "+Total_Tgt_Count,"INFO");
+	
+		if(SC.equalsIgnoreCase(TC)){
+		
+			//reportStep_only("Count_Validation Result","PASS");
+			System.out.println("Count Validation Matches");
+			
+		}
+		else{
+			
+			Count_Mismatch_Flag=true;
+			
+			//reportStep_only("Count_Validation Result","FAIL");
+			
+		}
+		
+		System.out.println(Total_Src_Count+"-------------------"+Total_Tgt_Count);
+		
+		System.out.println("Count Validation Ends");
+		System.out.println("------------------------");
+		logger.info("********Count Validation Ends************");
+		
+		
+}catch(SQLException se){
+	
+	Error_exception(Result_File,Count_Report,se.getMessage());
+	
+   
+   
+ }catch(Exception e){
+	 
+	 Error_exception(Result_File,Count_Report,e.getMessage());
+ }
+	
+}
+
+
+public void Source_query_Exe() throws SQLException, ClassNotFoundException, IOException {
+	
+	System.out.println("Source Query Begin");
+	long startTime = System.currentTimeMillis();
+	
+	String Query =Src_Query+" minus "+Tgt_Query;
+	logger.info("Src Query - "+Query);
+	System.out.println("Query Processing");
+	 res= stmt.executeQuery(Query);
+	 ResultSetMetaData rsmd=res.getMetaData();
+	 Src_Column_Count=rsmd.getColumnCount();
+	 System.out.println(Src_Column_Count);
+	 if(Src_Column_Count==Keyvalue_Column.length) {
+		 Non_Primary=false; 
+	 }
+	 
+	
+	long count=0;
+	 while(res.next())
+		{
+		 
+		 count++;
+		 
+		 if(count<=100000) {
+		 
+	
+		 String key_val="";
+		
+         for(int k=0;k<Src_Column_Count;k++){
+			 
+				 String v=res.getString(k+1); 
+				 if(k==0) {
+					
+					 if (res.wasNull()) {
+						  key_val=key_val+"";
+					  }
+					  else {
+						  key_val=key_val+v.trim();
+					  }
+					 
+				 }
+				 else {
+					 
+					 if (res.wasNull()) {
+						  key_val=key_val+" | "+"";
+					  }
+					  else {
+						  key_val=key_val+" | "+v.trim();
+					  }
+					 
+				 }
+				
+				 
+			 }
+         
+         
+		   
+			 Src_data.add(key_val);
+			 
+		 
+		 }
+		 else {
+			 break;
+		 }
+		 
+		} 
+	
+	 System.out.println("Source Minus Query End");
+	 
+	
+	 System.out.println("Source Minus completed");
+	 long stopTime = System.currentTimeMillis();
+	 long elapsedTime = stopTime - startTime;
+	 System.out.println("Source time taken :"+elapsedTime/1000+ " Seconds");
+
+}
+
+
+public void Target_query_Exe() throws SQLException, ClassNotFoundException, IOException {
+	
+	System.out.println("Source Query Begin");
+	long startTime = System.currentTimeMillis();
+	
+	String Query =Tgt_Query+" minus "+Src_Query;
+	
+	 res= stmt.executeQuery(Query);
+	 ResultSetMetaData rsmd=res.getMetaData();
+	 Tgt_Column_Count=rsmd.getColumnCount();
+	 
+	long count=0;
+	 while(res.next())
+		{
+		 count++;
+		 
+		 if(count<=100000) {
+	
+		 String key_val="";
+		
+         for(int k=0;k<Tgt_Column_Count;k++){
+			 
+				 String v=res.getString(k+1); 
+				 if(k==0) {
+					
+					 if (res.wasNull()) {
+						  key_val=key_val+"";
+					  }
+					  else {
+						  key_val=key_val+v.trim();
+					  }
+					 
+				 }
+				 else {
+					 
+					 if (res.wasNull()) {
+						  key_val=key_val+" | "+"";
+					  }
+					  else {
+						  key_val=key_val+" | "+v.trim();
+					  }
+					 
+				 }
+				
+				 
+			 }
+         
+         
+		   
+			 Tgt_data.add(key_val);
+			 
+		 
+		 }
+		 else {
+			 break;
+		 }
+		 
+		} 
+	
+	 System.out.println("Source Minus Query End");
+	 
+	
+	 System.out.println("Source Minus completed");
+	 long stopTime = System.currentTimeMillis();
+	 long elapsedTime = stopTime - startTime;
+	 System.out.println("Source time taken :"+elapsedTime/1000+ " Seconds");
+
+}
+
+
+public void Missing_Record() throws IOException{
+	 long startTime = System.currentTimeMillis();	
+	
+	System.out.println("Missing record begin");
+	int row=0;
+	ArrayList<String> record_Target = new ArrayList<String>();
+	ArrayList<String> record_Source = new ArrayList<String>();
+	
+	ArrayList<String> Dele_Src = new ArrayList<String>();
+	ArrayList<String> Dele_Tgt = new ArrayList<String>();
+	
+	Header_Missing_tgt(Result_File,Target_Missing);
+	Header_Missing_Src(Result_File,Source_Missing);
+    spliter1();
+	
+
+  
+   int count=0;
+   int count1=0;
+   		
+   
+   for (String key : Src_Map.keySet())  
+   { 
+        
+   	if(!(Tgt_Map.containsKey(key))){
+			  Source_Missing_Flag=true;
+			  
+			  count++;
+			  Dele_Src.add(key);
+			 
+			  if(count<=200) {
+			  record_Source.add("Present in Source But not in Target | "+key);
+   	      }  
+			 
+		  }
+   	
+   } 
+   
+   for (String key : Tgt_Map.keySet())  
+   { 
+        
+   	if(!(Src_Map.containsKey(key))){
+			  Target_Missing_Flag=true;
+			  count1++;
+			  Dele_Tgt.add(key);
+				 
+			  if(count1<=200) {
+			 
+			  record_Target.add("Present in Target But not in Source | "+key);
+			  }
+			 
+		  }
+   	
+   } 
+   
+   for (String key : Dele_Src)  {
+   	
+   	Src_Map.remove(key);
+   	
+   }
+   
+
+   for (String key : Dele_Tgt)  {
+   	
+   	Tgt_Map.remove(key);
+   	
+   }
+   
+
+		  System.out.println("record size of traget msiign : "+count1); 
+		  Tgt_missing_count=count1;
+		 
+		
+		  Src_missing_count=count;
+				
+		  System.out.println("record size of source msiign : "+Src_missing_count); 
+	   
+		Missing_Record_Bulk_Writer(Result_File,Source_Missing,record_Source);
+		Missing_Record_Bulk_Writer(Result_File,Target_Missing,record_Target);
+	      
+		System.out.println("Missing record end");
+		
+		record_Target.clear();
+		record_Source.clear();
+		
+		
+		 long stopTime = System.currentTimeMillis();
+		 long elapsedTime = stopTime - startTime;
+		 System.out.println("Missing time Taken:"+elapsedTime/1000+ " Seconds");
+	
+	
+	
+}
+
+
+
+public void Data_Validation() throws IOException{
+	  
+	int count=0;
+		
+	boolean Sta;
+	
+	System.out.println(Tgt_Map.size()+"------"+Src_Map.size());
+	
+	if(Non_Primary) {
+
+	
+	ArrayList<String> data_write = new ArrayList<String>();
+	
+	
+	
+	Header_data_mismatch(Result_File,Data_Mismatch);
+	
+		
+		        for (String key : Tgt_Map.keySet()) {
+		        	 Sta=false;
+		        	 
+		        	
+		 
+
+				if(Tgt_Map.get(key).equals(Src_Map.get(key))) {
+					
+				}
+				else {
+					
+					count++;
+					
+					Data_Mismatch_Flag=true;
+					
+					String[] Tgt_val=Tgt_Map.get(key).split("\\|");
+					String[] Src_val=Src_Map.get(key).split("\\|");
+					
+					String val="";
+					
+					
+					for(int i=0;i<Tgt_val.length;i++) {
+						
+						if(!(Tgt_val[i].trim().equalsIgnoreCase(Src_val[i].trim()))) {
+							
+		
+							 if(val.length()==0) {
+							
+								val=val+Tgt_val[i]+" | "+Src_val[i]+" | MisMatch ";
+							 }
+							 else {
+								 
+								 val=val+" | "+Tgt_val[i]+" | "+Src_val[i]+" | MisMatch ";
+								 
+							 }
+							
+							
+							Column_Mismatch.put(i+1, Column_Mismatch.get(i+1)+1);
+							
+							if(Column_Mismatch.get(i+1)<=10) {
+								
+								Sta=true;
+							}
+						}
+						
+						else {
+							
+							 if(val.length()==0) {
+									
+									val=val+Tgt_val[i]+" | "+Src_val[i]+" | Match ";
+								 }
+								 else {
+									 
+									 val=val+" | "+Tgt_val[i]+" | "+Src_val[i]+" | Match ";
+									 
+								 }
+						}
+						
+						
+						
+					}
+					
+					if(Sta){
+						
+						data_write.add(key+" | "+val);
+						
+					}
+					
+					
+					
+				}
+			}
+		
+		        Data_mismatch_count=count;
+		        
+		      
+		   
+		       Data_validation_Bulk_Writer(Result_File,Data_Mismatch,data_write);
+	}
+	else {
+		
+		Header_No_pri(Result_File,Data_Mismatch);
+		
+		
+		
+	}
+	
+	
+		
+		   	  
+}
+
+
+public void TGT_Duplicate() throws SQLException, IOException{
+	
+	
+	try{
+	System.out.println("Target Duplicate Validation Begins");
+	System.out.println("----------------------------------");
+	logger.info("********Target Duplicate Validation Begins************");
+	ArrayList<String> record = new ArrayList<String>();
+	String Finalquery=Tgt_Query;
+	String[] Finalquery1=Finalquery.split("from");
+	String[] FinalData = null;
+	String FinalData1 = "";
+	String ss1=Finalquery1[0].replace("select", "");
+	
+	FinalData=Tgt_Column_Name;
+
+	for(int gg=0;gg<FinalData.length;gg++){
+		
+		
+		if(gg==FinalData.length-1){
+			FinalData1=FinalData1.concat(FinalData[gg]+"  ");
+		}
+		else{
+		FinalData1=FinalData1.concat(FinalData[gg]+" ,");
+		}
+	}
+	
+	
+	 String Query="select "+FinalData1+" ,count(*) from ( "+Finalquery+" ) ss group by "+FinalData1+" having count(*)>1";
+	 logger.info("Query - "+Query);
+	
+	 System.out.println("Target Duplicate Validation Processing.........");	
+	
+	 res6 = stmt.executeQuery(Query);
+	 ResultSetMetaData rsmd=res6.getMetaData();
+	
+	 long Count = 0;	
+	while(res6.next())
+	{
+	  
+                  Count++;
+		
+			 String key_val="";
+	     for(int jj=0;jj<Tgt_Column_Name.length;jj++){
+	    	String v=res6.getString(jj+1); 
+			 if(key_val.length()==0) {
+				
+				 if (res6.wasNull()) {
+					  key_val=key_val+"";
+				  }
+				  else {
+					  key_val=key_val+v.trim();
+				  }
+				 
+			 }
+			 else {
+				 
+				 if (res6.wasNull()) {
+					  key_val=key_val+" | "+"";
+				  }
+				  else {
+					  key_val=key_val+" | "+v.trim();
+				  }
+				 
+			 }
+	    	
+			
+		}
+	    
+	    record.add(key_val);
+	   
+	}
+	
+	Tgt_duplicate_count=Count;
+	
+	//reportStep_only("Total Target Duplicate record Count : "+Tgt_duplicate_count,"INFO");
+	
+	 if(Tgt_duplicate_count>0) {
+		 Target_Duplicate_Flag=true;
+		}
+	
+	if(Tgt_duplicate_count==0) {
+		//reportStep_only("TARGET Duplicate VALIDATION ","PASS");
+		}
+		else {
+			//reportStep_only("TARGET Duplicate VALIDATION ","FAIL");
+		}
+	
+	
+	Header_Duplicate(Result_File,Target_Duplicate,Tgt_Column_Name);
+	
+	
+	
+	Duplicate_Bulk_Writer(Result_File,Target_Duplicate,record);
+	
+	
+	
+	System.out.println("Target Duplicate Validation Ends");
+	System.out.println("----------------------------------");
+	logger.info("********Target Duplicate Validation Ends************");
+	
+	}catch(SQLException se){
+		
+		Error_exception(Result_File,Target_Duplicate,se.getMessage());
+		
+
+	   
+	   
+	 }
+}
+
+
+public void SRC_Duplicate() throws SQLException, IOException{
+	
+	
+	try{
+	System.out.println("Source Duplicate Validation Begins");
+	System.out.println("----------------------------------");
+	logger.info("********Source Duplicate Validation Begins************");
+	ArrayList<String> record = new ArrayList<String>();
+	String Finalquery=Src_Query;
+	String[] Finalquery1=Finalquery.split("from");
+	String[] FinalData = null;
+	String FinalData1 = "";
+	String ss1=Finalquery1[0].replace("select", "");
+	
+	FinalData=Src_Column_Name;
+
+	for(int gg=0;gg<FinalData.length;gg++){
+		
+		
+		if(gg==FinalData.length-1){
+			FinalData1=FinalData1.concat(FinalData[gg]+"  ");
+		}
+		else{
+		FinalData1=FinalData1.concat(FinalData[gg]+" ,");
+		}
+	}
+	
+	
+	 String Query="select "+FinalData1+" ,count(*) from ( "+Finalquery+" ) bb group by "+FinalData1+" having count(*)>1";
+	 logger.info("Query - "+Query);
+	
+	 System.out.println("Source Duplicate Validation Processing.........");	
+	
+	 res7 = stmt.executeQuery(Query);
+	
+	 long Count = 0;	
+	while(res7.next())
+	{
+	  
+                  Count++;
+		
+			 String key_val="";
+	     for(int jj=0;jj<Src_Column_Name.length;jj++){
+	    	String v=res7.getString(jj+1); 
+			 if(key_val.length()==0) {
+				
+				 if (res7.wasNull()) {
+					  key_val=key_val+"";
+				  }
+				  else {
+					  key_val=key_val+v.trim();
+				  }
+				 
+			 }
+			 else {
+				 
+				 if (res7.wasNull()) {
+					  key_val=key_val+" | "+"";
+				  }
+				  else {
+					  key_val=key_val+" | "+v.trim();
+				  }
+				 
+			 }
+	    	
+			
+		}
+	    
+	    record.add(key_val);
+	   
+	}
+	
+	Src_duplicate_count=Count;
+	
+	//reportStep_only("Total Source Duplicate record Count : "+Src_duplicate_count,"INFO");
+	 if(Src_duplicate_count>0) {
+		 Source_Duplicate_Flag=true;
+		}
+	
+	if(Src_duplicate_count==0) {
+		//reportStep_only("SOURCE Duplicate VALIDATION","PASS");
+		}
+		else {
+			//reportStep_only("SOURCE Duplicate VALIDATION","FAIL");
+		}
+	
+	
+	Header_Duplicate(Result_File,Source_Duplicate,Src_Column_Name);
+	
+	Duplicate_Bulk_Writer(Result_File,Source_Duplicate,record);
+	
+	
+	
+	System.out.println("Source Duplicate Validation Ends");
+	System.out.println("----------------------------------");
+	logger.info("********Source Duplicate Validation Ends************");
+	
+	}catch(SQLException se){
+		
+		Error_exception(Result_File,Source_Duplicate,se.getMessage());
+		
+	   
+	   
+	 }
+} 
+
+public void Count_Summary() throws SQLException, IOException{
+	
+	Count_Write(Result_File,Count_Report);
+	Summary_Write(Result_File,Summary);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+public void spliter1() {
+	
+	  Iterator value = Src_data.iterator(); 
+	  
+    while (value.hasNext()) { 
+  	  
+  	  String[] act=value.next().toString().split("\\|");
+		  
+			String key_val="";
+			String val="";
+			int key_start=0;
+			int nonkey_start=0;
+			
+			 for(int j=0;j<act.length;j++) {
+					
+				  if(Key_Column_identifier(j)) {
+					  
+					  key_start++;
+					  
+					  String v=act[j]; 
+						 if(key_start==1) {
+							
+							 if (Strings.isNullOrEmpty(v)) {
+								  key_val=key_val+"";
+							  }
+							  else {
+								  key_val=key_val+v.trim();
+							  }
+							 
+						 }
+						 else {
+							 
+							 if (Strings.isNullOrEmpty(v)) {
+								  key_val=key_val+" | "+"";
+							  }
+							  else {
+								  key_val=key_val+" | "+v.trim();
+							  }
+							 
+						 }
+						 
+					 }
+						 else {
+							 nonkey_start++;
+							 String v=act[j]; 
+							 if(nonkey_start==1) {
+								
+								 if (Strings.isNullOrEmpty(v)) {
+									 val=val+"";
+								  }
+								  else {
+									  val=val+v.trim();
+								  }
+								 
+							 }
+							 else {
+								 
+								 if (Strings.isNullOrEmpty(v)) {
+									 val=val+" | "+"";
+								  }
+								  else {
+									  val=val+" | "+v.trim();
+								  }
+								 
+							 }
+							 
+					  
+				  }
+				  
+			 }
+			 
+  	  
+			 Src_Map.put(key_val,val);
+  	  
+    
+    }
+    
+    
+ Iterator value1 = Tgt_data.iterator(); 
+	  
+    while (value1.hasNext()) { 
+  	  
+  	  String[] act=value1.next().toString().split("\\|");
+		  
+			String key_val="";
+			String val="";
+			int key_start=0;
+			int nonkey_start=0;
+			
+			 for(int j=0;j<act.length;j++) {
+					
+				  if(Key_Column_identifier(j)) {
+					  key_start++;
+					  
+					  String v=act[j]; 
+						 if(key_start==1) {
+							
+							 if (Strings.isNullOrEmpty(v)) {
+								  key_val=key_val+"";
+							  }
+							  else {
+								  key_val=key_val+v.trim();
+							  }
+							 
+						 }
+						 else {
+							 
+							 if (Strings.isNullOrEmpty(v)) {
+								  key_val=key_val+" | "+"";
+							  }
+							  else {
+								  key_val=key_val+" | "+v.trim();
+							  }
+							 
+						 }
+						 
+					 }
+						 else {
+							 nonkey_start++;
+							 
+							 String v=act[j]; 
+							 if(nonkey_start==1) {
+								
+								 if (Strings.isNullOrEmpty(v)) {
+									 val=val+"";
+								  }
+								  else {
+									  val=val+v.trim();
+								  }
+								 
+							 }
+							 else {
+								 
+								 if (Strings.isNullOrEmpty(v)) {
+									 val=val+" | "+"";
+								  }
+								  else {
+									  val=val+" | "+v.trim();
+								  }
+								 
+							 }
+							 
+					  
+				  }
+				  
+			 }
+			 
+  	  
+			 Tgt_Map.put(key_val,val);
+  	  
+    
+    }
+	
+	
+	
+	
+}
+
+
+
+
+
+
+
+
+
+
+public static String writeBody(String Filepath,String Sheet,String Value,int col,int row,int St) throws IOException{
+ 	String val=Value;
+ 	String main=Sheet;
+ 	FileInputStream fis=new FileInputStream(Filepath);
+ 	XSSFWorkbook book=new XSSFWorkbook(fis);
+ 	XSSFSheet ws=book.getSheet(main);
+ 	ws.autoSizeColumn(col);
+ 	XSSFCellStyle lock=book.createCellStyle();
+ 	  lock.setAlignment(HorizontalAlignment.LEFT);
+    // lock.setWrapText(true);
+     //lock.setLocked(true);
+     XSSFFont font= book.createFont();
+     font.setFontHeightInPoints((short)10);
+     font.setFontName("Verdana");
+     font.setColor(IndexedColors.BLACK.getIndex());
+     font.setBold(false);
+     font.setItalic(false);
+     lock.setFont(font);
+     lock.setBorderTop(BorderStyle.MEDIUM);
+     lock.setBorderRight(BorderStyle.MEDIUM);
+     lock.setBorderBottom(BorderStyle.MEDIUM);
+     lock.setBorderLeft(BorderStyle.MEDIUM);
+ 	if(St==1){
+ 		XSSFRow rr=ws.createRow(row);
+ 		XSSFCell cell=rr.createCell(col);
+ 		
+ 		cell.setCellValue(Value);
+ 		cell.setCellStyle(lock);
+ 		
+ 	
+ 	}
+ 	else{
+ 		
+ 		XSSFRow rr=ws.getRow(row);
+ 		XSSFCell cell=rr.createCell(col);
+ 		cell.setCellValue(Value);
+ 		cell.setCellStyle(lock);
+ 	}
+ 	
+ 	//ws.protectSheet("Password1");
+ 	fis.close();
+ 	FileOutputStream fo=new FileOutputStream(Filepath);
+ 	book.write(fo);
+ 	book.close();
+ 	fo.flush();
+ 	fo.close();
+ 	return val;
+ }
+
+public void Mainframe_exe() throws Exception {
+	Process p = Runtime.getRuntime().exec("cmd.exe /c start C:\\Rumba\\Desktops\\A-Window.rdps");
+	Thread.sleep(10000);
+	Copy("log tso84,,"+Username);
+	Enter();		
+	Copy(pwd);	
+	Enter();	
+	Thread.sleep(15000);		
+	Enter();
+	Copy("zeketest;ze;5");
+	Enter();	
+		
+		PressTAB(1);
+	Copy("*");
+	PressTAB(1);
+	Copy("1ku");
+	PressTAB(3);
+	Copy("2");
+	Enter();
+	
+	Thread.sleep(5000);
+	for(int i=1;i<=8;i++){
+		PressTAB(i+1);
+		Copy("c");
+		Enter();
+		Thread.sleep(2000);
+		BufferedImage subimage_Active = ImageIO.read(new File("./Image/New_Value.png"));
+		 BufferedImage Main_image = new Robot().createScreenCapture(new Rectangle(Toolkit.getDefaultToolkit().getScreenSize()));
+		 boolean flag=true;
+		 
+		 if(match(subimage_Active, Main_image) != null) {
+			break;
+		 }
+		 
+		
+	}
+	
+	PressDEL(5);	
+	Copy(Job_ID);
+	Enter();
+	PressDEL(4);				
+										
+	Copy("run");
+	Enter();
+	Copy("complete");
+	Enter();
+	
+	Thread.sleep(3000);
+	Copy("start zeketest;ze;2");
+	Enter();
+	PressTAB(4);
+	Copy(Job_ID);
+	Enter();
+	validation();
+	f3(10);
+	Copy("3");
+	Enter();
+	Copy("bye");
+	Enter();
+	Thread.sleep(8000);
+	Kill_Bat();
+}
+ 
+ 
+
+}
