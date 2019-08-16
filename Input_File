@@ -1,0 +1,8 @@
+Excel_Path=\\\\MIDP-SFS-010\\checogdata\\SIT Data\\SIT-Informatics\\006-General\\Automation_Utilities\\DB2_Validator_Script\\Data\\
+Excel_Sheet=Sheet1
+Result=\\\\MIDP-SFS-010\\checogdata\\SIT Data\\SIT-Informatics\\006-General\\Automation_Utilities\\DB2_Validator_Script\\Results\\
+Username=n087517
+pwd=orange#7
+host=ewhdev.aetna.com
+port=10000
+DB=DEWHT000
