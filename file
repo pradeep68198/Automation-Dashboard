@@ -1,0 +1,20 @@
+Continuous testing is a strategy of evaluating quality at every step of continuous delivery process.
+
+And Continuous means undisrupted testing done on a continuous basis. In a Continuous DevOps process, a software change  is 
+continuously moving from Development to Testing to Deployment.
+So, In simple words CT means, the code is continuously developed, delivered, tested and deployed.
+
+whenever a developer checks the code in the Source Code Server like Jenkins, automated set of unit tests are executed in the 
+continuous process. If the tests fail, the build is rejected, and the developer is notified. If the build passes the test, 
+it is deployed to performance, QA servers for exhaustive functional and load tests. The tests are run in parallel. 
+If the tests pass, the software is deployed in production.
+
+
+Advantages
+Core functionalities of UWID will be tested in every deployment check-ins.
+Testing efforts/hours are saved due to the fully automated smoke testing. 
+Immediately UWID dev team will be notified and build won’t be deployed in production, If the smoke testing fails (Core functionalities are wrong).
+Even in time crunch, 100% core functionalities coverage will be tested in UWID, So this will maintain quality of the application as high.
+Even a small mistake will be identified and dev team will be notified in each deployment.
+	i.e. Even sequence chance of web elements are identified in sprint 4
+ These tests have to be run across multiple browsers, Versions, Screen resolution and test data combinations.
