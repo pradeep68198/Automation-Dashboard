@@ -1,0 +1,128 @@
+package com.netezza.scripts;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
+import org.apache.poi.ss.usermodel.DataFormatter;
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
+public class Dashboard_Validator {
+	
+	public static String Result_File="C:\\Users\\N278130\\Desktop\\New folder\\Summary.xlsx";
+	public static String Input_File="C:\\Users\\N278130\\Desktop\\New folder\\Sample.xlsx";
+
+	public static void main(String[] args) throws IOException {
+		
+		Create_workbook_Sheets();
+		
+		String[][] data=readXLSX(Input_File,"Sheet1");
+		
+		for(int i=1;i<data[0].length;i++) {
+			
+			
+			
+		}
+		
+
+	}
+	
+	
+	
+	public static String[][] readXLSX(String Filepath,String Sheet) throws IOException{
+		File excel=new File(Filepath);
+		FileInputStream fis=new FileInputStream(excel);
+		String Value=null;
+		XSSFWorkbook book=new XSSFWorkbook(fis);
+		XSSFSheet ws=book.getSheet(Sheet);
+		XSSFCell cell;
+		
+		DataFormatter format=new DataFormatter();
+		int rowNum=ws.getLastRowNum()+1;
+		int colNum=ws.getRow(0).getLastCellNum();
+		
+		String[][] Parameter=new String[(colNum)][(rowNum)];
+		for(int i=0;i<rowNum;i++){
+			XSSFRow row=ws.getRow(i);
+			for(int j=0;j<colNum;j++){
+				
+				cell=row.getCell(j);
+				if(!(cell==null)){
+					Value=format.formatCellValue(cell);
+				}
+				else{
+					Value=null;
+				}
+				Parameter[j][i]=Value;
+			}
+			
+		}
+		book.close();
+		return Parameter;
+		
+	}
+	
+public static void Create_Sheet(String Filepath,String Sheet) throws IOException{
+ 		
+ 		FileInputStream fis=new FileInputStream(Filepath);
+ 		XSSFWorkbook book=new XSSFWorkbook(fis);
+ 		XSSFSheet ws=book.createSheet(Sheet);
+ 		
+ 		if(Sheet.equalsIgnoreCase("Summary")){
+ 			book.setSheetOrder("Summary", 0);
+ 		}
+ 		fis.close();
+ 		FileOutputStream fo=new FileOutputStream(Filepath);
+ 		book.write(fo);
+ 		book.close();
+ 		fo.flush();
+ 		fo.close();
+ 		
+ 	}
+
+public static void Create_workbook_Sheets() throws IOException{
+	  
+    Create_Book(Result_File);
+	
+	Create_Sheet(Result_File,"Summary");
+  
+  
+}
+ 	
+
+ 	
+ public static String Create_Book(String Filepath) throws IOException{
+ 	
+ 		String FP=Filepath;
+ 		XSSFWorkbook workbook = new XSSFWorkbook();
+ 	    FileOutputStream out = new FileOutputStream(new File(FP));
+ 	      workbook.write(out);
+ 	      out.close();
+ 	      return FP;
+ 			
+ 		}
+ 
+ 
+ public String writeXLSX(String Filepath,String Sheet,String Value,int col,int row) throws IOException{
+		String val=Value;
+		String main=Sheet;
+		FileInputStream fis=new FileInputStream(Filepath);
+		XSSFWorkbook book=new XSSFWorkbook(fis);
+		XSSFSheet ws=book.getSheet(main);
+		ws.getRow(row).createCell(col).setCellValue(Value);
+		fis.close();
+		FileOutputStream fo=new FileOutputStream(Filepath);
+		book.write(fo);
+		book.close();
+		fo.flush();
+		fo.close();
+		return val;
+	}
+
+
+
+}
