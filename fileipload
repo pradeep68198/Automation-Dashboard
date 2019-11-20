@@ -1,0 +1,149 @@
+package com.JE.Tests;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.text.ParseException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.poi.ss.usermodel.DataFormatter;
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
+import org.testng.Assert;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Parameters;
+import org.testng.annotations.Test;
+
+import com.JE.Utilities.Driver_Wrapper;
+import com.JE.Utilities.General_Wrapper;
+import com.jcraft.jsch.JSchException;
+
+public class Test123 {
+	
+	public static String Result_File="C:\\Users\\N278130\\Desktop\\New folder\\Report.html";
+	public static String Input_File="C:\\Users\\N278130\\Desktop\\New folder\\Summary.xlsx";
+	public static WebDriver driver;
+	
+    public static HashMap<String, Integer> Summary =new HashMap<String, Integer>();
+	 
+
+	public static void main(String[] args) throws IOException {
+		
+		 System.setProperty("webdriver.chrome.driver", "chromedriver.exe"); 
+			ChromeOptions options = new ChromeOptions();
+			options.addArguments("disable-infobars");
+			options.setExperimentalOption("useAutomationExtension", false);
+		    options.setExperimentalOption("excludeSwitches", Collections.singletonList("enable-automation"));
+			
+			
+		
+		
+		String[][] data=readXLSX(Input_File,"Sheet1");
+		
+		for(int i=1;i<data[0].length;i++) {
+			
+			
+			Summary.put(data[1][i],0);
+	
+		}
+		
+		for(int i=1;i<data[0].length;i++) {
+			
+			
+			Summary.put(data[1][i],Summary.get(data[1][i])+1);
+	
+		}
+		
+		
+		PrintWriter writer1 = new PrintWriter(Result_File, "UTF-8");
+	    writer1.println("<html><head><title>Execution Summary</title></head><body><h2><center>Execution Issue Summary</center></h2><table border=\"1\"><tr><th>Reason</th><th>Issue Count</th></tr>");
+	    
+	    for (Map.Entry<String,Integer> entry : Summary.entrySet())  {
+	    	
+	    	  writer1.println("<tr><td>"+entry.getKey()+"</td><td>"+entry.getValue()+"</td></tr>");
+	    }
+           
+	    
+	    writer1.println("</table></body></html>");
+	   
+	    writer1.close();
+	    
+	    
+	    
+	   
+			driver=new ChromeDriver(options);
+		    driver.manage().window().maximize();
+			
+			driver.get(Result_File);
+			
+			
+			
+		
+
+	}
+	
+	
+	
+	public static String[][] readXLSX(String Filepath,String Sheet) throws IOException{
+		File excel=new File(Filepath);
+		FileInputStream fis=new FileInputStream(excel);
+		String Value=null;
+		XSSFWorkbook book=new XSSFWorkbook(fis);
+		XSSFSheet ws=book.getSheet(Sheet);
+		XSSFCell cell;
+		
+		DataFormatter format=new DataFormatter();
+		int rowNum=ws.getLastRowNum()+1;
+		int colNum=ws.getRow(0).getLastCellNum();
+		
+		String[][] Parameter=new String[(colNum)][(rowNum)];
+		for(int i=0;i<rowNum;i++){
+			XSSFRow row=ws.getRow(i);
+			for(int j=0;j<colNum;j++){
+				
+				cell=row.getCell(j);
+				if(!(cell==null)){
+					Value=format.formatCellValue(cell);
+				}
+				else{
+					Value=null;
+				}
+				Parameter[j][i]=Value;
+			}
+			
+		}
+		book.close();
+		return Parameter;
+		
+	}
+	
+
+ 
+ public String writeXLSX(String Filepath,String Sheet,String Value,int col,int row) throws IOException{
+		String val=Value;
+		String main=Sheet;
+		FileInputStream fis=new FileInputStream(Filepath);
+		XSSFWorkbook book=new XSSFWorkbook(fis);
+		XSSFSheet ws=book.getSheet(main);
+		ws.getRow(row).createCell(col).setCellValue(Value);
+		fis.close();
+		FileOutputStream fo=new FileOutputStream(Filepath);
+		book.write(fo);
+		book.close();
+		fo.flush();
+		fo.close();
+		return val;
+	}
+
+
+
+}
