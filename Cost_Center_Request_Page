@@ -1,0 +1,355 @@
+package com.FMS.Pages;
+
+import java.io.IOException;
+import java.util.List;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.Keys;
+import org.openqa.selenium.WebElement;
+
+import com.FMS.Utilities.General_Wrapper;
+
+
+
+public class Cost_Center_Request_Page extends General_Wrapper{
+	
+	    public By Create_New_CCR=By.xpath("//span[text()='Cost Center Requests']");
+	    public By Existing_CCR=By.xpath("//span[text()='Existing Cost Center Requests']");
+	    public By Contine_Button=By.xpath("//button[text()='Continue']");
+	    public By Submit_Button=By.xpath("//button[text()=' Submit ']");
+	    public By Search_Button=By.xpath("//button[text()='Search']");
+	    public By Approve_Button=By.xpath("//button[text()=' Approve ']");
+	    public By Deny_Button=By.xpath("//button[text()='Deny']");
+	    
+	    public By Completed=By.xpath("//label[text()='Cost Center Type']/following-sibling::div/div/label[2]");
+	    
+	    public By Request_dropdown=By.xpath("//label[text()='Request']/following-sibling::div/angular2-multiselect/div/div[1]/div");
+	    public By Request_search=By.xpath("//label[text()='Request']/following-sibling::div/angular2-multiselect/div/div[2]/div[3]/div/input");
+	    public By Request_select=By.xpath("//label[text()='Request']/following-sibling::div/angular2-multiselect/div/div[2]/div[3]/ul/span/li[1]");
+	    
+	    public By Request_Type_dropdown=By.xpath("//label[text()='Request Type']/following-sibling::div/angular2-multiselect/div/div[1]/div");
+	    public By Request_Type_search=By.xpath("//label[text()='Request Type']/following-sibling::div/angular2-multiselect/div/div[2]/div[3]/div/input");
+	    public By Request_Type_select=By.xpath("//label[text()='Request Type']/following-sibling::div/angular2-multiselect/div/div[2]/div[3]/ul/span/li[1]");
+	    
+	    public By Existing_Parent_dropdown=By.xpath("//label[text()='Existing Parent Cost Center']/following-sibling::div/angular2-multiselect/div/div[1]/div");
+	    public By Existing_Parent_search=By.xpath("//label[text()='Existing Parent Cost Center']/following-sibling::div/angular2-multiselect/div/div[2]/div[3]/div/input");
+	    public By Existing_Parent_select=By.xpath("//label[text()='Existing Parent Cost Center']/following-sibling::div/angular2-multiselect/div/div[2]/div[3]/ul/span/li[1]");
+	    public By Existing_Parent_select1=By.xpath("//label[text()='Existing Parent Cost Center']/following-sibling::div/angular2-multiselect/div/div[2]/div[3]/ul/span/li[2]");
+	    public By Parent_Cost_Center=By.xpath("//label[text()='Parent Cost Center']/following-sibling::div/input");
+	    public By Parent_Cost_Center_Name=By.xpath("//label[text()='Parent  Cost Center Name']/following-sibling::div/input");
+	    
+	    public By Success_message=By.xpath("//div[contains(text(),'The e.Service Reference ID is')]");
+	    public By Success_message_Approve=By.xpath("//div[contains(text(),'Your update has been Successfully saved')]");
+	    public By Search_field =By.xpath("//*[@id='DataTables_Table_0_filter']/label/input");
+	    public By wait=By.xpath("//*[@id='DataTables_Table_0']/tbody/tr/td[3]");
+	    public By CC_Summary=By.xpath("//*[@id='DataTables_Table_0']/tbody/tr/td");
+	    public By Approve=By.xpath("//*[@id='DataTables_Table_0']/tbody/tr/td[7]/button[2]");
+	    
+	    public void Create_New_CCR_Action(){
+	    	
+		    Click(Create_New_CCR,"Create_New_CCR");
+	 	
+	       }
+	    
+       public void Completed_Action(){
+	    	
+		    Click(Completed,"Completed");
+	 	
+	       }
+		    
+		    
+		    public void Existing_CCR_Action(){
+		    	
+		    	 Click(Existing_CCR,"Existing_CCR");
+		    	
+		    }
+		    
+		    public void Contine_Button_Action(){
+		    	
+		    	 Click(Contine_Button,"Contine_Button");
+		    	
+		    }
+		    
+		    public void Submit_Button_Action(){
+		    	
+		    	 Click(Submit_Button,"Submit_Button");
+		    	
+		    }
+		    
+		    public void Search_Button_Action(){
+		    	
+		    	 Click(Search_Button,"Search_Button");
+		    	
+		    }
+		    
+		    public void Parent_Cost_Center_Action(String value){
+		    	
+		    	enterText(Parent_Cost_Center,value,"Parent_Cost_Center");
+		    	
+		    }
+	        
+	        
+		    
+		    public void Parent_Cost_Center_Name_Action(String value){
+		    	
+		    	enterText(Parent_Cost_Center_Name,value,"Parent_Cost_Center_Name");
+		    	
+		    }
+		    
+		    
+		    public void Approve_Button_Action() throws InterruptedException{
+		    	
+		    	Thread.sleep(3000);
+		    	
+		    	List<WebElement> val=driver.findElements(By.xpath("//*[@id='page-top']/modal-container/div/div/perfect-scrollbar/div/div[1]/div/app-new-cost-center/create-cost-center/form/div"));
+		    	
+		    	System.out.println("aaaaaaaaaaaaaaaaaaaa");
+		    	System.out.println(val.size());
+		    	for(int i=1;i<val.size();i++) {
+		    		
+		    		driver.findElement(By.xpath("//*[@id='page-top']/modal-container/div/div/perfect-scrollbar/div/div[1]/div/app-new-cost-center/create-cost-center/form/div["+i+"]/div/a")).click();
+		    	
+		    	}
+		    	
+		    	
+			    Click(Approve_Button,"Approve_Button");
+		 	
+		       }
+		    
+             public void Deny_Button_Action(){
+            	 
+            	 List<WebElement> val=driver.findElements(By.xpath("//*[@id='page-top']/modal-container/div/div/perfect-scrollbar/div/div[1]/div/app-new-cost-center/create-cost-center/form/div"));
+ 		    	
+ 		    	for(int i=1;i<val.size();i++) {
+ 		    		
+ 		    		driver.findElement(By.xpath("//*[@id='page-top']/modal-container/div/div/perfect-scrollbar/div/div[1]/div/app-new-cost-center/create-cost-center/form/div["+i+"]/div")).click();
+ 		    	
+ 		    	}
+		    	
+			    Click(Deny_Button,"Deny_Button");
+		 	
+		       }
+	        
+		    
+		    public void Request_Dropdown_Action(String value){
+		    	
+		    	
+		    	//Thread.sleep(3000);
+		    	   Click(Request_dropdown,"Request_dropdown");
+		    	
+			    	
+			    	enterText(Request_search,value,"Request_search");
+			    	
+			    	
+			    	 Click(Request_select,"Request_select");
+			    	
+		    	
+		    }
+		    
+		    public void Request_Type_Dropdown_Action(String value){
+		    	
+		    	 Click(Request_Type_dropdown,"Request_Type_dropdown");
+			    	
+			    	enterText(Request_Type_search,value,"Request_Type_search");
+			    	
+			    	 Click(Request_Type_select,"Request_Type_select");
+		    	
+		    }
+		    
+		    
+		    public void Existing_Parent_Dropdown_Action(String value) throws InterruptedException{
+		    	
+		    	 Click(Existing_Parent_dropdown,"Existing_Parent_dropdown");
+			    	
+			    	enterText(Existing_Parent_search,value,"Existing_Parent_search");
+			    	
+			    	for(int i=0;i<=10;i++) {
+				    	driver.findElement(Existing_Parent_search).sendKeys(Keys.ENTER);
+				    	Thread.sleep(2000);
+				    	if(!(isElementPresent(Existing_Parent_select1))) {
+				    		break;
+				    	
+				    	}
+				    	Thread.sleep(2000);
+				    	}
+			    	
+			    	 Click(Existing_Parent_select,"Existing_Parent_select");
+		    	
+		    }
+		    
+		    
+		    
+		    
+		    public void Cost_Center_Parent_Child(String CC,String CC_Name,String FC,String Staffing,String Company_Code) throws InterruptedException, IOException{
+		    	
+		    	String[] Cost_Center=CC.split(",");
+		    	String[] Cost_Name=CC_Name.split(",");
+		    	String[] Functional_Code=FC.split(",");
+		    	String[] Staffing_Code=Staffing.split(",");
+		    	String[] CC_Code=Company_Code.split(",");
+		    	
+		    	for(int i=0;i<Cost_Center.length;i++) {
+		    		
+		    		driver.findElement(By.xpath("//div[@id='childCost']/div/div["+(i+3)+"]/div[2]/div/div/div[1]/div/div/input")).sendKeys(Cost_Center[i]);
+		    		Thread.sleep(1000);
+		    		driver.findElement(By.xpath("//div[@id='childCost']/div/div["+(i+3)+"]/div[2]/div/div/div[2]/div/div/input")).sendKeys(Cost_Name[i]);
+		    		Thread.sleep(1000);
+		    		driver.findElement(By.xpath("//div[@id='childCost']/div/div["+(i+3)+"]/div[2]/div/div/div[3]/div/div/input")).click();
+		    		Thread.sleep(1000);
+		    		driver.findElement(By.xpath("//div[@id='childCost']/div/div["+(i+3)+"]/div[2]/div/div/div[3]/div/div/angular2-multiselect/div/div[2]/div[3]/div/input")).sendKeys(Functional_Code[i]);
+		    		Thread.sleep(1000);
+		    		driver.findElement(By.xpath("//div[@id='childCost']/div/div["+(i+3)+"]/div[2]/div/div/div[3]/div/div/angular2-multiselect/div/div[2]/div[3]/ul/span/li[1]")).click();
+		    		Thread.sleep(1000);
+		    		
+		    		if(Staffing_Code[i].equalsIgnoreCase("Yes")) {
+		    			
+		    			driver.findElement(By.xpath("//div[@id='childCost']/div/div["+(i+3)+"]/div[2]/div/div/div[4]/div/div/div/label[1]")).click();
+		    			Thread.sleep(1000);
+		    			driver.findElement(By.xpath("//div[@id='childCost']/div/div["+(i+3)+"]/div[2]/div/div/div[5]/div/div/input")).click();
+			    		Thread.sleep(1000);
+			    		driver.findElement(By.xpath("//div[@id='childCost']/div/div["+(i+3)+"]/div[2]/div/div/div[5]/div/div/angular2-multiselect/div/div[2]/div[3]/div/input")).sendKeys(CC_Code[i]);
+			    		Thread.sleep(1000);
+			    		driver.findElement(By.xpath("//div[@id='childCost']/div/div["+(i+3)+"]/div[2]/div/div/div[5]/div/div/angular2-multiselect/div/div[2]/div[3]/ul/span/li[1]")).click();
+			    		Thread.sleep(1000);
+			    		
+		    			
+		    		}
+		    		else {
+		    			
+		    			driver.findElement(By.xpath("//div[@id='childCost']/div/div["+(i+3)+"]/div[2]/div/div/div[4]/div/div/div/label[2]")).click();
+		    			
+		    		}
+		    		
+		    		if(i<Cost_Center.length-1) {
+		    			
+		    			driver.findElement(By.xpath("//div[@id='childCost']/div/div["+(i+3)+"]/div[1]/div[2]/button[1]")).click();
+		    			
+		    			Thread.sleep(3000);
+		    			
+		    		}
+		    		
+		    		
+		    		
+		    	}
+			 
+			 
+		 }
+		    
+		    
+ public void Cost_Center_Child(String CC,String CC_Name,String FC,String Staffing,String Company_Code) throws InterruptedException, IOException{
+		    	
+		    	String[] Cost_Center=CC.split(",");
+		    	String[] Cost_Name=CC_Name.split(",");
+		    	String[] Functional_Code=FC.split(",");
+		    	String[] Staffing_Code=Staffing.split(",");
+		    	String[] CC_Code=Company_Code.split(",");
+		    	
+		    	for(int i=0;i<Cost_Center.length;i++) {
+		    		
+		    		driver.findElement(By.xpath("//div[@id='childCost']/div/div["+(i+2)+"]/div[2]/div/div/div[1]/div/div/input")).sendKeys(Cost_Center[i]);
+		    		Thread.sleep(1000);
+		    		driver.findElement(By.xpath("//div[@id='childCost']/div/div["+(i+2)+"]/div[2]/div/div/div[2]/div/div/input")).sendKeys(Cost_Name[i]);
+		    		Thread.sleep(1000);
+		    		driver.findElement(By.xpath("//div[@id='childCost']/div/div["+(i+2)+"]/div[2]/div/div/div[3]/div/div/input")).click();
+		    		Thread.sleep(1000);
+		    		driver.findElement(By.xpath("//div[@id='childCost']/div/div["+(i+2)+"]/div[2]/div/div/div[3]/div/div/angular2-multiselect/div/div[2]/div[3]/div/input")).sendKeys(Functional_Code[i]);
+		    		Thread.sleep(1000);
+		    		driver.findElement(By.xpath("//div[@id='childCost']/div/div["+(i+2)+"]/div[2]/div/div/div[3]/div/div/angular2-multiselect/div/div[2]/div[3]/ul/span/li[1]")).click();
+		    		Thread.sleep(1000);
+		    		
+		    		if(Staffing_Code[i].equalsIgnoreCase("Yes")) {
+		    			
+		    			driver.findElement(By.xpath("//div[@id='childCost']/div/div["+(i+2)+"]/div[2]/div/div/div[4]/div/div/div/label[1]")).click();
+		    			Thread.sleep(1000);
+		    			driver.findElement(By.xpath("//div[@id='childCost']/div/div["+(i+2)+"]/div[2]/div/div/div[5]/div/div/input")).click();
+			    		Thread.sleep(1000);
+			    		driver.findElement(By.xpath("//div[@id='childCost']/div/div["+(i+2)+"]/div[2]/div/div/div[5]/div/div/angular2-multiselect/div/div[2]/div[3]/div/input")).sendKeys(CC_Code[i]);
+			    		Thread.sleep(1000);
+			    		driver.findElement(By.xpath("//div[@id='childCost']/div/div["+(i+2)+"]/div[2]/div/div/div[5]/div/div/angular2-multiselect/div/div[2]/div[3]/ul/span/li[1]")).click();
+			    		Thread.sleep(1000);
+		    			
+		    		}
+		    		else {
+		    			
+		    			driver.findElement(By.xpath("//div[@id='childCost']/div/div["+(i+2)+"]/div[2]/div/div/div[4]/div/div/div/label[2]")).click();
+		    			
+		    		}
+		    		
+		    		if(i<Cost_Center.length-1) {
+		    			
+		    			driver.findElement(By.xpath("//div[@id='childCost']/div/div["+(i+2)+"]/div[1]/div[2]/button[1]")).click();
+		    			
+		    			Thread.sleep(3000);
+		    			
+		    		}
+		    		
+		    		
+		    		
+		    	}
+			 
+			 
+		 }
+ 
+ 
+    public String Success_message_Action(){
+	   	
+	   	
+     String text=Get_Text(Success_message,"Success_message");
+     
+     String[] value=text.split("is");
+ 	
+ 	return value[1].trim();
+	
+    }
+    
+    public void Success_message_Approve_Action(){
+	   	
+    	String text=Get_Text(Success_message_Approve,"Success_message_Approve");
+	   	
+    	
+   	
+       }
+       
+    
+    
+    public void Search_field_Action(String value){
+    	
+    	enterText(Search_field,value,"Existing JE Search field");
+    	
+    }
+    
+    
+    
+    public String[] Cost_Center_Summary_Action(){
+ 	   
+	    String[] text=new String[6];
+	  
+	    waitForElement(wait,"Job_Elimination_Summary");
+    	List<WebElement> val=driver.findElements(CC_Summary);
+    	
+        waitForElement(CC_Summary,"Job_Elimination_Summary");
+    	
+    	
+    	for(int i=0;i<6;i++) {
+    		
+    		text[i]=val.get(i).getText().trim();
+    	}
+    	
+    	
+    	return text;
+    }
+    
+    
+    public void Approve_Action(){
+    	
+    	 Click(Approve,"Approve");
+    	
+    }
+   
+		    
+		    
+	        
+		    
+		    
+
+}
