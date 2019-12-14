@@ -1,0 +1,135 @@
+<%@ page import = "java.io.File" %>
+<%@ page import = "java.util.List" %>
+<%@ page import = "java.util.ArrayList" %>
+<%@ page import = "java.util.Arrays" %>
+<%@ page import = "java.util.HashSet" %>	
+<%@ page import = "java.util.Properties" %>
+<%@ page import = "java.util.Set" %>
+<%@ page import = "Utilities.General_Functions1" %>
+<%@ page import = "javax.swing.filechooser.FileSystemView" %>
+
+<%
+
+String Type=request.getParameter("src_type");  
+ 
+if(Type.equalsIgnoreCase("CSV")){
+	
+	session.setAttribute("Src_DB",request.getParameter("src_type"));
+	session.setAttribute("Src_EOR",request.getParameter("src_eor"));
+	session.setAttribute("Src_Symbol",",");
+	session.setAttribute("Src_Column_Name",request.getParameter("src_column_name"));
+
+}
+
+if(Type.equalsIgnoreCase("Delimiter")){
+	
+	
+	session.setAttribute("Src_DB",request.getParameter("src_type"));
+	session.setAttribute("Src_EOR",request.getParameter("src_eor"));
+	if(request.getParameter("src_symbol").equalsIgnoreCase("tab")){
+		session.setAttribute("Src_Symbol","\\t");
+	}
+	else{
+	session.setAttribute("Src_Symbol",request.getParameter("src_symbol"));
+	}
+	session.setAttribute("Src_Column_Name",request.getParameter("src_column_name"));
+
+}
+
+if(Type.equalsIgnoreCase("Excel")){
+	
+	
+	session.setAttribute("Src_DB",request.getParameter("src_type"));
+	
+}
+
+if(Type.equalsIgnoreCase("Mainframe")){
+	
+	session.setAttribute("Src_DB",request.getParameter("src_type"));
+	session.setAttribute("Src_Username_Mainframe",request.getParameter("src_username_mainframe"));
+	session.setAttribute("Src_Password_Mainframe",request.getParameter("src_password_mainframe"));
+	session.setAttribute("Src_Host_Mainframe",request.getParameter("src_host_mainframe"));
+	session.setAttribute("Src_Filename_Mainframe",request.getParameter("src_filename_mainframe"));
+
+}
+
+
+
+
+%>
+<!DOCTYPE html>
+<html>
+
+<head>
+<script>
+
+  function preventBack(){window.history.forward();}
+  setTimeout("preventBack()", 0);
+  window.onunload=function(){null};
+</script>
+
+<title>Home</title>
+<link rel="stylesheet" href="CSS/style-Home.css"> 
+<link rel="stylesheet"  href="CSS/Form.css">
+<link rel="stylesheet"  href="CSS/Radio.css">
+<style>
+body {
+    text-align: center;
+}
+</style>
+</head>
+<body>
+
+<H2><center>Data Validator Dashboard<HR></center></H2>
+<BR>
+
+<div id="one">
+<div class="form-style-5">
+<% if(Type.equalsIgnoreCase("CSV") || Type.equalsIgnoreCase("Delimiter")){ %>
+
+<form method="post" enctype="multipart/form-data" name=f4 id=f4>
+<fieldset>
+<legend><span class="number">1</span>Upload the Source File</legend>
+<input required type="file" name="file" id="file" size="50"  placeholder="Upload the File*" />
+</fieldset>
+
+<input type="submit" name="submit4" value="Proceed to Target" formAction='Upload_CSV_Delimiter.jsp'  />
+</form>
+
+<%} else if(Type.equalsIgnoreCase("Mainframe")){ %>
+
+<form method="post" enctype="multipart/form-data" name=f6 id=f6>
+<a class="myButton" href="Copy_book.xlsx" download="Copy_book.xlsx">Download Sample</a></th>
+<fieldset>
+<legend><span class="number">1</span>Upload the Copy Book</legend>
+<input required type="file" name="file" id="file" size="50"  placeholder="Upload the Copybook" />
+</fieldset>
+
+<input type="submit" name="submit4" value="Proceed to Target" formAction='Upload_Copybook.jsp'  />
+</form>
+
+
+<%} else{ %>
+
+
+<form method="post" enctype="multipart/form-data" name=f5 id=f5>
+<fieldset>
+<legend><span class="number">1</span>Upload the Source document</legend>
+<input required type="file" name="file" id="file" size="50"  placeholder="Upload the excel sheet *" />
+</fieldset>
+<input type="submit" name="submit4" value="Proceed to Target" formAction='Upload_File.jsp'  />
+</form>
+
+
+
+<% }%>
+
+</div>
+</div>
+
+<script src="Scripts/index_Home.js"></script>
+<script src="Scripts/AllTest.js"></script>
+<script src="Scripts/jquery-3.2.1.min.js"></script> 
+
+</body>
+</html>
