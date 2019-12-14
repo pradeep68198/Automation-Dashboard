@@ -1,0 +1,20 @@
+# Page URL Details
+Cost_Center_Page=https://qacorpservices.aetna.com/finance/#/cost-center?debugid=
+Finance_Report=https://qacorpservices.aetna.com/finance/#/financial-reports?debugid=
+FMS_ML_URL=http://qa.corpservicesml.aetna.com:8000/qconsole/
+HR_HUB_ML_URL=http://qa.hrhub.aetna.com:8000/qconsole/
+
+# Excel Path Details
+Data_Sheet=\\\\MIDP-SFS-010\\checogdata\\SIT Data\\SIT-Informatics\\006-General\\Automation_Utilities\\CVS_Finance_Data\\Data\\
+HRHUB_Sheet=\\\\MIDP-SFS-010\\checogdata\\SIT Data\\SIT-Informatics\\006-General\\Automation_Utilities\\CVS_Finance_Data\\Data\\HR_HUB.xlsx
+Result_Path=C:\\CVS_Finance_Script\\Results\\
+Report_Query_Path=\\\\MIDP-SFS-010\\checogdata\\SIT Data\\SIT-Informatics\\006-General\\Automation_Utilities\\CVS_Finance_Data\\Data\\Report_Query.xlsx
+
+
+# MarkLogic Details
+Username=N295737
+Password=Poj@2019
+
+#Unix JobRun Details
+Transfer_Job=cd /var/aetnaapps/eservice/scripts ; ./wrapper_eservice.ksh U1C33006
+Cost_Center_File=cd /u01/eservice/outbound  ; grep \"%s\" Q1G3PB.CC.REQUEST
