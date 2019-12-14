@@ -1,0 +1,2334 @@
+package com.FMS.Utilities;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintWriter;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.poi.ss.usermodel.BorderStyle;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.DataFormatter;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.ss.usermodel.IndexedColors;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.streaming.SXSSFSheet;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFCellStyle;
+import org.apache.poi.xssf.usermodel.XSSFFont;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.testng.Assert;
+
+import com.google.common.base.Strings;
+import com.monitorjbl.xlsx.StreamingReader;
+
+public class File_Compare extends General_Wrapper{
+	
+	
+  
+	public  String Src_EOR;
+	public  String Src_Symbol;
+	
+	//public  String Tgt_EOR;
+	//public  String Tgt_Symbol;
+	
+    public  String Input_File_Path_Source;
+	public  String Input_File_Path_Target;
+	public  String Result_File;
+	public String Key_Column;
+	public  Cell cell_final;
+	
+	
+	public  String Result_Folder;
+
+	
+ 
+	
+	public   HashSet<String> Src_data = new HashSet<String>(); 
+	public   HashSet<String> Tgt_data = new HashSet<String>(); 
+	public   HashSet<String> Src_duplicate = new HashSet<String>(); 
+	public   HashSet<String> Tgt_duplicate = new HashSet<String>(); 
+	public   HashSet<String> Temp_Src_data; 
+	public   HashSet<String> Temp_Tgt_data; 
+	public   HashMap<String, String> Src_Map =new HashMap<String, String>();
+	public   HashMap<String, String> Tgt_Map =new HashMap<String, String>();
+	
+	public   HashMap<Integer, Long> Column_Mismatch =new HashMap<Integer, Long>();
+	 
+	public   HashMap<Integer, String> Table_column =new HashMap<Integer, String>();
+	public   HashMap<Integer, String> Table_column_key =new HashMap<Integer, String>();
+   
+    public  boolean Non_Primary=true;
+    
+    public  long Total_Src_Count,Total_Tgt_Count,Total_Src_Count_no_dup,Total_Tgt_Count_no_dup,Src_duplicate_count,Tgt_duplicate_count;
+  
+    public  String Source_Missing="Source Missing";
+    public  String Target_Missing="Target Missing";
+    public  String Count_Report="Count Summary";
+    public  String Source_Duplicate="Source Duplicate";
+    public  String Target_Duplicate="Target Duplicate";
+  
+    public  String Data_Mismatch="Data Mismatch";
+    public  String Summary="Summary";
+    public  boolean Source_Missing_Flag=false;
+    public  boolean Target_Missing_Flag=false;
+    
+    public  boolean Source_Duplicate_Flag=false;
+    public  boolean Target_Duplicate_Flag=false;
+    public  boolean Data_Mismatch_Flag=false;
+    public  boolean Count_Mismatch_Flag=false;
+    public  String[] Src_Column_Name,Tgt_Column_Name;
+    public  int Src_Column_Count,Tgt_Column_Count;
+    public  int Record_Count,Src_missing_count,Tgt_missing_count,Data_mismatch_count;
+    public  int[] Keyvalue_Column;
+    public String Tgt_Col_Name,Head,Foot;
+    public   Row row_final;
+	public  XSSFCellStyle lock_Final;
+    
+    
+        public void Common_caller(String key,String Result_File1,String Unixpath,String excelpath) throws ClassNotFoundException, SQLException, IOException, InterruptedException {
+        	
+        	 Result_File=Result_File1;
+          	 Key_Column=key;
+          	Input_File_Path_Source=Unixpath;
+          	Input_File_Path_Target=excelpath;
+          	Src_Symbol="\\|";
+          	Src_EOR="No";
+             Key_Value_Split();
+             Create_workbook_Sheets();
+             html_update("FMS - Extracting data and Performing Count and Duplicate validation ");
+             Target_Excel_Exe();
+             Source_Delimiter_Exe();
+             
+            html_update("FMS - Performing Missing record validation");    
+        	Missing_Record();
+        	html_update("FMS - Performing Data validation ");  
+        	Data_Validation();
+        	Count_Validation();
+        	html_update("FMS - Creating Final Result Sheet in report Folder"); 
+        	Summary_sheet();
+          	
+          	
+          }
+        
+        public void HR_HUB_Common_caller(String key,String Result_File1,String Unixpath,String excelpath,String Column_name,String Deli,String Header,String Footer) throws ClassNotFoundException, SQLException, IOException, InterruptedException {
+        	
+       	     Result_File=Result_File1;
+       	     Tgt_Col_Name=Column_name;
+         	 Key_Column=key;
+         	Input_File_Path_Source=Unixpath;
+         	Input_File_Path_Target=excelpath;
+         	Src_Symbol=Deli;
+         	Src_EOR="No";
+         	Head=Header;
+         	Foot=Footer;
+            Key_Value_Split();
+            Create_workbook_Sheets();
+            
+            if(Deli.equalsIgnoreCase("Fixed Width")) {
+            	
+            	 html_update("HRHUB - Extracting data and Performing Count and Duplicate validation ");
+            	Target_fixed_Exe();
+            	Source_fixed_Exe();
+            }
+            else {
+            	 html_update("HRHUB - Extracting data and Performing Count and Duplicate validation ");
+            Target_Delimiter_Exe();
+            Source_Delimiter_Exe();
+            }
+            
+            html_update("HRHUB - Performing Missing record validation ");   
+       	Missing_Record();
+       	html_update("HRHUB - Performing Data validation ");  
+       	Data_Validation();
+        
+       	Count_Validation();
+       	html_update("HRHUB - Creating Final Result Sheet in report Folder"); 
+       	Summary_sheet();
+         	
+         	
+         }
+        
+        public void FMS_Common_caller(String key,String Result_File1,String Unixpath,String excelpath) throws ClassNotFoundException, SQLException, IOException {
+        	
+      	     Result_File=Result_File1;
+      	  
+        	 Key_Column=key;
+        	Input_File_Path_Source=Unixpath;
+        	Input_File_Path_Target=excelpath;
+        	Src_Symbol=",";
+        	Src_EOR="No";
+           Key_Value_Split();
+           Create_workbook_Sheets();
+           
+           Target_CSV_Exe();
+           Source_Delimiter_Exe();
+           
+           
+      	Missing_Record();
+      	Data_Validation();
+      	Count_Validation();
+      	Summary_sheet();
+        	
+        	
+        }
+       
+        
+        
+
+    
+    
+
+  public boolean Key_Column_identifier(int i) {
+	
+	 boolean test = false; 
+    for (int element : Keyvalue_Column) { 
+        if (element == i) { 
+            test = true; 
+            break; 
+        } 
+    }
+    
+    if(test) {
+   	 return true;
+   	
+    }
+    else
+   	 return false;
+	
+}
+  
+  
+  public  void Source_dup() throws IOException{
+	  long startTime = System.currentTimeMillis();	
+	  System.out.println("Source duplicate begin");
+	  ArrayList<String> record = new ArrayList<String>(Src_duplicate);
+	
+	  int h=0;
+	  Header_Duplicate(Result_File,Source_Duplicate,Src_Column_Name);
+	
+	  
+	  if(record.size()>0) {
+		  Source_Duplicate_Flag=true;
+	  Duplicate_Bulk_Writer(Result_File,Source_Duplicate,record);
+	  }
+	
+	  record.clear();
+	
+	  long stopTime = System.currentTimeMillis();
+		 long elapsedTime = stopTime - startTime;
+		 System.out.println("Source Duplicate time Taken:"+elapsedTime/1000+ " Seconds");
+	  
+  }
+  
+public void Target_dup() throws IOException{
+	 long startTime = System.currentTimeMillis();	
+	 System.out.println("Target Duplicate begin");
+	  ArrayList<String> record = new ArrayList<String>(Tgt_duplicate);
+	 
+	  int h=0;
+	  
+	  Header_Duplicate(Result_File,Target_Duplicate,Tgt_Column_Name);
+	  
+	  
+	 
+	  
+	  if(record.size()>0) {
+		  Target_Duplicate_Flag=true;
+	   Duplicate_Bulk_Writer(Result_File,Target_Duplicate,record);
+	  }
+		
+		 record.clear();
+		
+		  long stopTime = System.currentTimeMillis();
+			 long elapsedTime = stopTime - startTime;
+			 System.out.println("Target Duplicate time Taken:"+elapsedTime/1000+ " Seconds");
+		  
+  }
+
+
+
+
+public  void Count_Validation() throws IOException{
+	 long startTime = System.currentTimeMillis();	
+	  
+	System.out.println("Count validation begin");
+    
+    if(Total_Src_Count==Total_Tgt_Count){
+		Count_Mismatch_Flag=false;
+	}
+	else{
+		Count_Mismatch_Flag=true;
+	}
+    
+    Count_Write(Result_File,Count_Report);
+  
+  
+	System.out.println("count validation end");
+	 long stopTime = System.currentTimeMillis();
+	 long elapsedTime = stopTime - startTime;
+	 System.out.println("Target Duplicate time Taken:"+elapsedTime/1000+ " Seconds");
+}
+
+public void Missing_Record() throws IOException{
+	 long startTime = System.currentTimeMillis();	
+	
+	System.out.println("Missing record begin");
+	int row=0;
+	ArrayList<String> record_Target = new ArrayList<String>();
+	ArrayList<String> record_Source = new ArrayList<String>();
+	
+	ArrayList<String> Dele_Src = new ArrayList<String>();
+	ArrayList<String> Dele_Tgt = new ArrayList<String>();
+	
+	Header_Missing_tgt(Result_File,Target_Missing);
+	Header_Missing_Src(Result_File,Source_Missing);
+	
+   
+   
+    
+    Temp_Src_data = new  HashSet<String>(Src_data);
+    Temp_Tgt_data = new  HashSet<String>(Tgt_data);
+    
+    System.out.println(Temp_Src_data.size());
+    System.out.println(Temp_Tgt_data.size());
+  
+    Temp_Src_data.removeAll(Tgt_data);
+    Temp_Tgt_data.removeAll(Src_data);
+    
+    
+    System.out.println("aaaaa :"+Temp_Src_data.size());
+    System.out.println("aaaaa :"+Temp_Tgt_data.size());
+  
+    
+    Src_data.clear();
+	Tgt_data.clear();
+	
+	spliter1();
+	
+
+    Temp_Src_data.clear();
+    Temp_Tgt_data.clear();
+    
+    int count=0;
+    int count1=0;
+    		
+    
+    for (String key : Src_Map.keySet())  
+    { 
+         
+    	if(!(Tgt_Map.containsKey(key))){
+			  Source_Missing_Flag=true;
+			  
+			  count++;
+			  Dele_Src.add(key);
+			 
+			  if(count<=200) {
+			  record_Source.add("Present in Source But not in Target | "+key);
+    	      }  
+			 
+		  }
+    	
+    } 
+    
+    for (String key : Tgt_Map.keySet())  
+    { 
+         
+    	if(!(Src_Map.containsKey(key))){
+			  Target_Missing_Flag=true;
+			  count1++;
+			  Dele_Tgt.add(key);
+				 
+			  if(count1<=200) {
+			 
+			  record_Target.add("Present in Target But not in Source | "+key);
+			  }
+			 
+		  }
+    	
+    } 
+    
+    for (String key : Dele_Src)  {
+    	
+    	Src_Map.remove(key);
+    	
+    }
+    
+
+    for (String key : Dele_Tgt)  {
+    	
+    	Tgt_Map.remove(key);
+    	
+    }
+    
+    
+
+    
+		  System.out.println("record size of traget msiign : "+count1); 
+		  Tgt_missing_count=count1;
+		 
+		
+		  Src_missing_count=count;
+				
+		  System.out.println("record size of source msiign : "+Src_missing_count); 
+	   
+		Missing_Record_Bulk_Writer(Result_File,Source_Missing,record_Source);
+		Missing_Record_Bulk_Writer(Result_File,Target_Missing,record_Target);
+	      
+		System.out.println("Missing record end");
+		
+		record_Target.clear();
+		record_Source.clear();
+		
+		
+		 long stopTime = System.currentTimeMillis();
+		 long elapsedTime = stopTime - startTime;
+		 System.out.println("Missing time Taken:"+elapsedTime/1000+ " Seconds");
+	
+	
+	
+}
+
+
+
+public void spliter1() {
+	
+	  Iterator value = Temp_Src_data.iterator(); 
+	  
+      while (value.hasNext()) { 
+    	  
+    	  String[] act=value.next().toString().split("\\|");
+		  
+			String key_val="";
+			String val="";
+			int key_start=0;
+			int nonkey_start=0;
+			
+			 for(int j=0;j<act.length;j++) {
+					
+				  if(Key_Column_identifier(j)) {
+					  
+					  key_start++;
+					  
+					  String v=act[j]; 
+						 if(key_start==1) {
+							
+							 if (Strings.isNullOrEmpty(v)) {
+								  key_val=key_val+"";
+							  }
+							  else {
+								  key_val=key_val+v.trim();
+							  }
+							 
+						 }
+						 else {
+							 
+							 if (Strings.isNullOrEmpty(v)) {
+								  key_val=key_val+" | "+"";
+							  }
+							  else {
+								  key_val=key_val+" | "+v.trim();
+							  }
+							 
+						 }
+						 
+					 }
+						 else {
+							 nonkey_start++;
+							 String v=act[j]; 
+							 if(nonkey_start==1) {
+								
+								 if (Strings.isNullOrEmpty(v)) {
+									 val=val+"";
+								  }
+								  else {
+									  val=val+v.trim();
+								  }
+								 
+							 }
+							 else {
+								 
+								 if (Strings.isNullOrEmpty(v)) {
+									 val=val+" | "+"";
+								  }
+								  else {
+									  val=val+" | "+v.trim();
+								  }
+								 
+							 }
+							 
+					  
+				  }
+				  
+			 }
+			 
+    	  
+			 Src_Map.put(key_val,val);
+    	  
+      
+      }
+      
+      
+   Iterator value1 = Temp_Tgt_data.iterator(); 
+	  
+      while (value1.hasNext()) { 
+    	  
+    	  String[] act=value1.next().toString().split("\\|");
+		  
+			String key_val="";
+			String val="";
+			int key_start=0;
+			int nonkey_start=0;
+			
+			 for(int j=0;j<act.length;j++) {
+					
+				  if(Key_Column_identifier(j)) {
+					  key_start++;
+					  
+					  String v=act[j]; 
+						 if(key_start==1) {
+							
+							 if (Strings.isNullOrEmpty(v)) {
+								  key_val=key_val+"";
+							  }
+							  else {
+								  key_val=key_val+v.trim();
+							  }
+							 
+						 }
+						 else {
+							 
+							 if (Strings.isNullOrEmpty(v)) {
+								  key_val=key_val+" | "+"";
+							  }
+							  else {
+								  key_val=key_val+" | "+v.trim();
+							  }
+							 
+						 }
+						 
+					 }
+						 else {
+							 nonkey_start++;
+							 
+							 String v=act[j]; 
+							 if(nonkey_start==1) {
+								
+								 if (Strings.isNullOrEmpty(v)) {
+									 val=val+"";
+								  }
+								  else {
+									  val=val+v.trim();
+								  }
+								 
+							 }
+							 else {
+								 
+								 if (Strings.isNullOrEmpty(v)) {
+									 val=val+" | "+"";
+								  }
+								  else {
+									  val=val+" | "+v.trim();
+								  }
+								 
+							 }
+							 
+					  
+				  }
+				  
+			 }
+			 
+    	  
+			 Tgt_Map.put(key_val,val);
+    	  
+      
+      }
+	
+	
+	
+	
+}
+
+
+
+
+   public void Data_Validation() throws IOException{
+	  
+	int count=0;
+		
+	boolean Sta;
+	
+	System.out.println(Tgt_Map.size()+"------"+Src_Map.size());
+	
+	if(Non_Primary) {
+
+	
+	ArrayList<String> data_write = new ArrayList<String>();
+	
+	
+	
+	Header_data_mismatch(Result_File,Data_Mismatch);
+	
+		
+		        for (String key : Tgt_Map.keySet()) {
+		        	 Sta=false;
+		        	 
+		        	
+		 
+
+				if(Tgt_Map.get(key).equals(Src_Map.get(key))) {
+					
+				}
+				else {
+					
+					count++;
+					
+					Data_Mismatch_Flag=true;
+					
+					String[] Tgt_val=Tgt_Map.get(key).split("\\|");
+					String[] Src_val=Src_Map.get(key).split("\\|");
+					
+					String val="";
+					
+					
+					for(int i=0;i<Tgt_val.length;i++) {
+						
+						if(!(Tgt_val[i].trim().equalsIgnoreCase(Src_val[i].trim()))) {
+							
+		
+							 if(val.length()==0) {
+							
+								val=val+Tgt_val[i]+" | "+Src_val[i]+" | MisMatch ";
+							 }
+							 else {
+								 
+								 val=val+" | "+Tgt_val[i]+" | "+Src_val[i]+" | MisMatch ";
+								 
+							 }
+							
+							
+							Column_Mismatch.put(i+1, Column_Mismatch.get(i+1)+1);
+							
+							if(Column_Mismatch.get(i+1)<=10) {
+								
+								Sta=true;
+							}
+						}
+						
+						else {
+							
+							 if(val.length()==0) {
+									
+									val=val+Tgt_val[i]+" | "+Src_val[i]+" | Match ";
+								 }
+								 else {
+									 
+									 val=val+" | "+Tgt_val[i]+" | "+Src_val[i]+" | Match ";
+									 
+								 }
+						}
+						
+						
+						
+					}
+					
+					if(Sta){
+						
+						data_write.add(key+" | "+val);
+						
+					}
+					
+					
+					
+				}
+			}
+		
+		        Data_mismatch_count=count;
+		        
+		      
+		   
+		       Data_validation_Bulk_Writer(Result_File,Data_Mismatch,data_write);
+	}
+	else {
+		
+		Header_No_pri(Result_File,Data_Mismatch);
+		
+		
+		
+	}
+	
+	
+		
+		   	  
+}
+
+
+
+
+
+    
+    public void Key_Value_Split() {
+    	
+    	 String[] Keyvalue_Split=Key_Column.split(",");
+		  Keyvalue_Column=new int[Keyvalue_Split.length];
+		  for(int x=0;x<Keyvalue_Split.length;x++){
+		    	
+		    	Keyvalue_Column[x]=Integer.parseInt(Keyvalue_Split[x])-1;
+	
+		    	
+		    }
+		 
+    	
+    }
+    
+   
+       
+      
+      public  boolean isStringEmpty(String input){
+          if(input.trim().length() == 0){
+              return true;
+          }
+          return false;
+      }
+  	
+  	public  boolean isStringNull(String input){
+  	
+          if(input == null ){
+              return true;
+          }
+          return false;
+      }
+  	
+public  void Create_Sheet(String Filepath,String Sheet) throws IOException{
+ 		
+ 		FileInputStream fis=new FileInputStream(Filepath);
+ 		XSSFWorkbook book=new XSSFWorkbook(fis);
+ 		XSSFSheet ws=book.createSheet(Sheet);
+ 		
+ 		if(Sheet.equalsIgnoreCase("Summary")){
+ 			book.setSheetOrder("Summary", 0);
+ 		}
+ 		fis.close();
+ 		FileOutputStream fo=new FileOutputStream(Filepath);
+ 		book.write(fo);
+ 		book.close();
+ 		fo.flush();
+ 		fo.close();
+ 		
+ 	}
+
+public  void Create_workbook_Sheets() throws IOException{
+	  
+    Create_Book(Result_File);
+	Create_Sheet(Result_File,Count_Report);
+	Create_Sheet(Result_File,Source_Duplicate);
+	Create_Sheet(Result_File,Target_Duplicate);
+	Create_Sheet(Result_File,Source_Missing);
+	Create_Sheet(Result_File,Target_Missing);
+	//Create_Sheet(Result_File,Missing_Record);
+	Create_Sheet(Result_File,Data_Mismatch);
+	Create_Sheet(Result_File,Summary);
+  
+  
+}
+ 	
+
+ 	
+ public  String Create_Book(String Filepath) throws IOException{
+ 	
+ 		String FP=Filepath;
+ 		XSSFWorkbook workbook = new XSSFWorkbook();
+ 	    FileOutputStream out = new FileOutputStream(new File(FP));
+ 	      workbook.write(out);
+ 	      out.close();
+ 	      return FP;
+ 			
+ 		}
+ 
+ 
+ public void File_Copy(String Src,String Desc) throws InterruptedException, IOException{
+		File f1= new File(Src);
+		File f2= new File(Desc);
+		FileUtils.copyFile(f1, f2);
+
+	}
+ 
+ 
+ 
+ public void Target_Excel_Exe() throws SQLException, ClassNotFoundException, IOException {
+	 	
+	 
+	  HashSet<String> Coll = new HashSet<String>(); 
+	  String[] ll = null;
+		InputStream is = new FileInputStream(new File(Input_File_Path_Target));
+		Workbook workbook = StreamingReader.builder()
+		        .rowCacheSize(100)   
+		        .bufferSize(4096)    
+		        .open(is); 
+		
+		 Sheet s = workbook.getSheetAt(0);
+		 
+		 long Tgt_count=0;
+		 int jj=0;
+		 int rr=0;
+		
+		 for (Row r : s) {
+			 
+			 String key_val="";
+			
+			 int i=0;
+			 int gg=0;
+			 int ff=0;
+			 if(rr==0) {
+				 Tgt_Column_Count=r.getLastCellNum();
+				 ll=new String[Tgt_Column_Count];
+				 rr++;
+			 }
+			 
+			 for(int kk=0;kk<Tgt_Column_Count;kk++) {
+			    	
+			         if(jj==0) {
+			        	
+					        Cell c=r.getCell(kk);
+			        	
+						
+						 Coll.add(c.getStringCellValue());
+			        	
+			        	 ll[kk]=c.getStringCellValue();
+			        	if(!(Key_Column_identifier(i))) {
+			        		 gg++;
+			        	 Column_Mismatch.put(gg, (long)0);
+					
+						 Table_column.put(gg,c.getStringCellValue().trim());
+			        	 }
+			        	else {
+			        		
+			    				ff++;
+			    				
+			    				Table_column_key.put(ff,c.getStringCellValue().trim());
+			    				
+			    			
+			        	}
+			        	 i++;
+			        	 
+			         }
+			         else {
+			        	 
+			        	 String v; 
+					      Cell c=r.getCell(kk);
+	
+					      if(!(c==null)){
+			 					v=c.getStringCellValue();
+			 				}
+			 				else{
+			 					v="";
+			 				} 
+						 if(kk==0) {
+							
+							 if (Strings.isNullOrEmpty(v)) {
+								  key_val=key_val+"";
+							  }
+							  else {
+								  key_val=key_val+v.trim();
+							  }
+							 
+						 }
+						 else {
+							 
+							 if (Strings.isNullOrEmpty(v)) {
+								  key_val=key_val+" | "+"";
+							  }
+							  else {
+								  key_val=key_val+" | "+v.trim();
+							  }
+							 
+						 }
+						 
+					 }
+			         }
+			    
+			   
+			   
+			    if(jj==0){
+			    	 jj++;
+			    }
+			    else {
+			    	Tgt_count++;
+			    	 int temp=Tgt_data.size();
+					   Tgt_data.add(key_val);
+					 if(temp==Tgt_data.size()) {
+						 Tgt_duplicate.add(key_val);
+					 }
+			    	
+			    }
+			   
+				 
+				 
+					}
+		 
+		 
+		 
+		 
+		 Tgt_Column_Name =ll;
+		 
+		 if(Tgt_Column_Name.length==Keyvalue_Column.length) {
+	   		 Non_Primary=false; 
+	   	 }
+		
+			  
+		 Total_Tgt_Count=Tgt_count;
+		 Total_Tgt_Count_no_dup=Tgt_data.size();
+		 Tgt_duplicate_count=Tgt_duplicate.size();
+		 System.out.println("Tgttotal count : "+Total_Tgt_Count);
+		 System.out.println("Tgttotal count no dup : "+Total_Tgt_Count_no_dup);
+		 System.out.println("Tgt Duplicate Record count : "+Tgt_duplicate_count);
+		 
+		 Target_dup();
+		
+		 System.out.println("Target completed");
+	 }
+ 
+ 
+ 
+ public void Summary_sheet() throws IOException{	
+	 
+	 Summary_Write(Result_File,Summary);
+	
+	
+}
+ 
+ 
+
+ 
+ public void Source_Delimiter_Exe() throws IOException{
+	 	
+		
+	  BufferedReader reader1 = new BufferedReader(new FileReader(Input_File_Path_Source));
+	  long Src_count=0;
+	  int len=0;
+   
+	  Src_Column_Name=Tgt_Column_Name;
+      Src_Column_Count=Tgt_Column_Name.length;
+   
+    
+
+		 System.out.println("----------------------");
+		 System.out.println(Src_Symbol);
+    String line1 = reader1.readLine();
+		
+  
+    while (line1 != null)
+    {
+  	  String key_val="";
+  	  
+  	  String[] v=line1.split(Src_Symbol) ;
+  	 
+  	  if(Src_EOR.equalsIgnoreCase("Yes")) {
+  		  len=v.length-1;
+  	  }
+  	  else {
+  		   len=v.length;
+  	  }
+  	 
+  	  
+  	  for(int i=0;i<len;i++)
+        {
+  		 
+  		  if(i==0) {
+  			  
+  			  if (Strings.isNullOrEmpty(v[i])) {
+					  key_val=key_val+"";
+				  }
+				  else {
+					  key_val=key_val+v[i].trim();
+				  }
+				 
+  			  
+  		  }
+  		  else {
+  			  
+  			  if (Strings.isNullOrEmpty(v[i])) {
+					  key_val=key_val+" | "+"";
+				  }
+				  else {
+					  key_val=key_val+" | "+v[i].trim();
+				  }
+  			   
+        }
+  	  
+        }
+  	  
+  	  
+  	Src_count++;
+	    	 int temp=Src_data.size();
+	    	 Src_data.add(key_val);
+	    	
+			 if(temp==Src_data.size()) {
+				 Src_duplicate.add(key_val);
+			 }
+  	  
+  	  
+  	  line1 = reader1.readLine();
+  	 System.out.println(line1); 
+         
+    }
+			
+    
+    reader1.close();
+		 
+		 if(Src_Column_Name.length==Keyvalue_Column.length) {
+	   		 Non_Primary=false; 
+	   	 }
+		   
+		 Total_Src_Count=Src_count;
+		 Total_Src_Count_no_dup=Src_data.size();
+		 Src_duplicate_count=Src_duplicate.size();
+		
+		 Source_dup();
+		
+		 System.out.println("Target completed");
+	 }
+ 
+ 
+ 
+ 
+ public  void Header_Duplicate(String Filepath,String Sheet,String[] act) throws IOException{
+		
+	 FileInputStream inputStream = new FileInputStream(Filepath);
+     XSSFWorkbook wb_template = new XSSFWorkbook(inputStream);
+     inputStream.close();
+
+     SXSSFWorkbook wb = new SXSSFWorkbook(wb_template); 
+     wb.setCompressTempFiles(true);
+
+     SXSSFSheet sh = (SXSSFSheet) wb.getSheet(Sheet);
+     sh.setRandomAccessWindowSize(100);
+     
+     XSSFCellStyle lock=(XSSFCellStyle) wb.createCellStyle();
+     lock.setAlignment(HorizontalAlignment.LEFT);
+     XSSFFont font= (XSSFFont) wb.createFont();
+     font.setFontHeightInPoints((short)10);
+     font.setFontName("Verdana");
+     font.setColor(IndexedColors.BLACK.getIndex());
+     font.setBold(true);
+     font.setItalic(false);
+     lock.setFont(font);
+     lock.setBorderTop(BorderStyle.MEDIUM);
+     lock.setBorderRight(BorderStyle.MEDIUM);
+     lock.setBorderBottom(BorderStyle.MEDIUM);
+     lock.setBorderLeft(BorderStyle.MEDIUM);
+     
+     
+         Row row = sh.createRow(0);
+        
+         for(int i=0;i<act.length;i++){
+        	// sh.autoSizeColumn(i);
+        	 Cell cell = row.createCell(i);  
+        	 if(Strings.isNullOrEmpty(act[i])){
+	        	 cell.setCellValue(act[i]);
+	        	 }
+	        	 else {
+	        		 cell.setCellValue(act[i].trim()); 
+	        	 }
+        	 cell.setCellStyle(lock);
+         }
+           
+
+ 
+
+
+ FileOutputStream out = new FileOutputStream(Filepath);
+ wb.write(out);
+ out.close();
+}
+
+
+public  void Header_Missing_Src(String Filepath,String Sheet) throws IOException{
+	
+	 FileInputStream inputStream = new FileInputStream(Filepath);
+     XSSFWorkbook wb_template = new XSSFWorkbook(inputStream);
+     inputStream.close();
+
+     SXSSFWorkbook wb = new SXSSFWorkbook(wb_template); 
+     wb.setCompressTempFiles(true);
+
+     SXSSFSheet sh = (SXSSFSheet) wb.getSheet(Sheet);
+     sh.setRandomAccessWindowSize(100);
+     
+     XSSFCellStyle lock=(XSSFCellStyle) wb.createCellStyle();
+     lock.setAlignment(HorizontalAlignment.LEFT);
+     XSSFFont font= (XSSFFont) wb.createFont();
+     font.setFontHeightInPoints((short)10);
+     font.setFontName("Verdana");
+     font.setColor(IndexedColors.BLACK.getIndex());
+     font.setBold(true);
+     font.setItalic(false);
+     lock.setFont(font);
+     lock.setBorderTop(BorderStyle.MEDIUM);
+     lock.setBorderRight(BorderStyle.MEDIUM);
+     lock.setBorderBottom(BorderStyle.MEDIUM);
+     lock.setBorderLeft(BorderStyle.MEDIUM);
+     
+     
+       Row row = sh.createRow(0);
+       Cell cell1 = row.createCell(0); 
+       cell1.setCellValue("Error Desc");
+       
+         int i=1;
+        
+         for(int aa=0;aa<Keyvalue_Column.length;aa++){
+        	
+        	 Cell cell = row.createCell(i); 
+        	     
+  
+	        	 cell.setCellValue(Src_Column_Name[Keyvalue_Column[aa]]);
+        	     
+	        		
+	        	
+        	 cell.setCellStyle(lock);
+        	 i++;
+         }
+           
+
+ 
+
+
+ FileOutputStream out = new FileOutputStream(Filepath);
+ wb.write(out);
+ out.close();
+}
+
+public  void Header_Missing_tgt(String Filepath,String Sheet) throws IOException{
+	
+	 FileInputStream inputStream = new FileInputStream(Filepath);
+     XSSFWorkbook wb_template = new XSSFWorkbook(inputStream);
+     inputStream.close();
+
+     SXSSFWorkbook wb = new SXSSFWorkbook(wb_template); 
+     wb.setCompressTempFiles(true);
+
+     SXSSFSheet sh = (SXSSFSheet) wb.getSheet(Sheet);
+     sh.setRandomAccessWindowSize(100);
+     
+     XSSFCellStyle lock=(XSSFCellStyle) wb.createCellStyle();
+     lock.setAlignment(HorizontalAlignment.LEFT);
+     XSSFFont font= (XSSFFont) wb.createFont();
+     font.setFontHeightInPoints((short)10);
+     font.setFontName("Verdana");
+     font.setColor(IndexedColors.BLACK.getIndex());
+     font.setBold(true);
+     font.setItalic(false);
+     lock.setFont(font);
+     lock.setBorderTop(BorderStyle.MEDIUM);
+     lock.setBorderRight(BorderStyle.MEDIUM);
+     lock.setBorderBottom(BorderStyle.MEDIUM);
+     lock.setBorderLeft(BorderStyle.MEDIUM);
+     
+     
+       Row row = sh.createRow(0);
+       Cell cell1 = row.createCell(0); 
+       cell1.setCellValue("Error Desc");
+         int i=1;
+        
+         for(int aa=0;aa<Keyvalue_Column.length;aa++){
+        	
+        	 Cell cell = row.createCell(i); 
+        	     
+  
+	        	 cell.setCellValue(Tgt_Column_Name[Keyvalue_Column[aa]]);
+        	     
+	        		
+	        	
+        	 cell.setCellStyle(lock);
+        	 i++;
+         }
+           
+
+ 
+
+
+ FileOutputStream out = new FileOutputStream(Filepath);
+ wb.write(out);
+ out.close();
+}
+
+public  void Header_No_pri(String Filepath,String Sheet) throws IOException{
+	
+	 FileInputStream inputStream = new FileInputStream(Filepath);
+     XSSFWorkbook wb_template = new XSSFWorkbook(inputStream);
+     inputStream.close();
+
+     SXSSFWorkbook wb = new SXSSFWorkbook(wb_template); 
+     wb.setCompressTempFiles(true);
+
+     SXSSFSheet sh = (SXSSFSheet) wb.getSheet(Sheet);
+     sh.setRandomAccessWindowSize(100);
+     
+     XSSFCellStyle lock=(XSSFCellStyle) wb.createCellStyle();
+     lock.setAlignment(HorizontalAlignment.LEFT);
+     XSSFFont font= (XSSFFont) wb.createFont();
+     font.setFontHeightInPoints((short)10);
+     font.setFontName("Verdana");
+     font.setColor(IndexedColors.BLACK.getIndex());
+     font.setBold(true);
+     font.setItalic(false);
+     lock.setFont(font);
+     lock.setBorderTop(BorderStyle.MEDIUM);
+     lock.setBorderRight(BorderStyle.MEDIUM);
+     lock.setBorderBottom(BorderStyle.MEDIUM);
+     lock.setBorderLeft(BorderStyle.MEDIUM);
+     
+     
+       Row row = sh.createRow(0);
+       Cell cell1 = row.createCell(0); 
+       cell1.setCellValue("No non Primary key columns");
+         
+	        		
+	        	
+        	 cell1.setCellStyle(lock);
+        
+
+ 
+
+
+ FileOutputStream out = new FileOutputStream(Filepath);
+ wb.write(out);
+ out.close();
+}
+
+public  void Header_data_mismatch(String Filepath,String Sheet) throws IOException{
+	
+	 FileInputStream inputStream = new FileInputStream(Filepath);
+     XSSFWorkbook wb_template = new XSSFWorkbook(inputStream);
+     inputStream.close();
+
+     SXSSFWorkbook wb = new SXSSFWorkbook(wb_template); 
+     wb.setCompressTempFiles(true);
+
+     SXSSFSheet sh = (SXSSFSheet) wb.getSheet(Sheet);
+     sh.setRandomAccessWindowSize(100);
+     
+     XSSFCellStyle lock=(XSSFCellStyle) wb.createCellStyle();
+     lock.setAlignment(HorizontalAlignment.LEFT);
+     XSSFFont font= (XSSFFont) wb.createFont();
+     font.setFontHeightInPoints((short)10);
+     font.setFontName("Verdana");
+     font.setColor(IndexedColors.BLACK.getIndex());
+     font.setBold(true);
+     font.setItalic(false);
+     lock.setFont(font);
+     lock.setBorderTop(BorderStyle.MEDIUM);
+     lock.setBorderRight(BorderStyle.MEDIUM);
+     lock.setBorderBottom(BorderStyle.MEDIUM);
+     lock.setBorderLeft(BorderStyle.MEDIUM);
+     
+     
+       Row row = sh.createRow(0);
+      
+         int i=0;
+        
+         for(int aa=0;aa<Keyvalue_Column.length;aa++){
+        	
+        	     Cell cell = row.createCell(i); 
+	        	 cell.setCellValue(Tgt_Column_Name[Keyvalue_Column[aa]]);
+        	    	
+        	 cell.setCellStyle(lock);
+        	 i++;
+         }
+         
+         for(int bb=0;bb<Tgt_Column_Name.length;bb++){
+        	 
+        	 if(!(Key_Column_identifier1(bb))) {
+	        	
+    	     Cell cell = row.createCell(i); 
+        	 cell.setCellValue(Tgt_Column_Name[bb]+"_Target");	
+    	     cell.setCellStyle(lock);
+    	     i++;
+    	     
+    	     Cell cell1 = row.createCell(i); 
+        	 cell1.setCellValue(Tgt_Column_Name[bb]+"_Source");	
+    	     cell1.setCellStyle(lock);
+    	     i++;
+    	     
+    	     Cell cell2 = row.createCell(i); 
+        	 cell2.setCellValue(Tgt_Column_Name[bb]+"_Status");	
+    	     cell2.setCellStyle(lock);
+    	     i++;
+    	 
+        	 }
+     }
+           
+
+ 
+
+
+ FileOutputStream out = new FileOutputStream(Filepath);
+ wb.write(out);
+ out.close();
+}
+
+ public  boolean Key_Column_identifier1(int i) {
+		
+	 boolean test = false; 
+    for (int element : Keyvalue_Column) { 
+        if (element == i) { 
+            test = true; 
+            break; 
+        } 
+    }
+    
+    if(test) {
+   	 return true;
+   	
+    }
+    else
+   	 return false;
+	
+}
+
+
+
+
+public  void Missing_Record_Bulk_Writer(String Filepath,String Sheet,ArrayList<String> map) throws IOException{
+	
+	 FileInputStream inputStream = new FileInputStream(Filepath);
+     XSSFWorkbook wb_template = new XSSFWorkbook(inputStream);
+     inputStream.close();
+
+     SXSSFWorkbook wb = new SXSSFWorkbook(wb_template); 
+     wb.setCompressTempFiles(true);
+
+     SXSSFSheet sh = (SXSSFSheet) wb.getSheet(Sheet);
+     sh.setRandomAccessWindowSize(100);
+     
+     XSSFCellStyle lock=(XSSFCellStyle) wb.createCellStyle();
+     lock.setAlignment(HorizontalAlignment.LEFT);
+     XSSFFont font= (XSSFFont) wb.createFont();
+     font.setFontHeightInPoints((short)10);
+     font.setFontName("Verdana");
+     font.setColor(IndexedColors.BLACK.getIndex());
+     font.setBold(false);
+     font.setItalic(false);
+     lock.setFont(font);
+     lock.setBorderTop(BorderStyle.MEDIUM);
+     lock.setBorderRight(BorderStyle.MEDIUM);
+     lock.setBorderBottom(BorderStyle.MEDIUM);
+     lock.setBorderLeft(BorderStyle.MEDIUM);
+    
+      for(int rownum = 1; rownum <= map.size(); rownum++){
+         Row row = sh.createRow(rownum);
+         
+         String[] act=map.get(rownum-1).split(" \\| ");
+        
+         for(int i=0;i<act.length;i++){
+        	// sh.autoSizeColumn(i);
+        	 Cell cell = row.createCell(i);  
+        	 if(Strings.isNullOrEmpty(act[i])){
+	        	 cell.setCellValue(act[i]);
+	        	 }
+	        	 else {
+	        		 cell.setCellValue(act[i].trim()); 
+	        	 }
+        	 cell.setCellStyle(lock);
+         }
+           
+
+ }
+
+
+ FileOutputStream out = new FileOutputStream(Filepath);
+ wb.write(out);
+ out.close();
+}
+
+public  void Data_validation_Bulk_Writer(String Filepath,String Sheet,ArrayList<String> map) throws IOException{
+	
+	 FileInputStream inputStream = new FileInputStream(Filepath);
+     XSSFWorkbook wb_template = new XSSFWorkbook(inputStream);
+     inputStream.close();
+
+     SXSSFWorkbook wb = new SXSSFWorkbook(wb_template); 
+     wb.setCompressTempFiles(true);
+
+     SXSSFSheet sh = (SXSSFSheet) wb.getSheet(Sheet);
+     sh.setRandomAccessWindowSize(100);
+     
+     XSSFCellStyle lock=(XSSFCellStyle) wb.createCellStyle();
+     lock.setAlignment(HorizontalAlignment.LEFT);
+     XSSFFont font= (XSSFFont) wb.createFont();
+     font.setFontHeightInPoints((short)10);
+     font.setFontName("Verdana");
+     font.setColor(IndexedColors.BLACK.getIndex());
+     font.setBold(false);
+     font.setItalic(false);
+     lock.setFont(font);
+     lock.setBorderTop(BorderStyle.MEDIUM);
+     lock.setBorderRight(BorderStyle.MEDIUM);
+     lock.setBorderBottom(BorderStyle.MEDIUM);
+     lock.setBorderLeft(BorderStyle.MEDIUM);
+    
+      for(int rownum = 1; rownum <= map.size(); rownum++){
+         Row row = sh.createRow(rownum);
+         
+         String[] act=map.get(rownum-1).split(" \\| ");
+        
+         for(int i=0;i<act.length;i++){
+        	// sh.autoSizeColumn(i);
+        	 Cell cell = row.createCell(i);  
+        	 if(Strings.isNullOrEmpty(act[i])){
+	        	 cell.setCellValue(act[i]);
+	        	 }
+	        	 else {
+	        		 cell.setCellValue(act[i].trim()); 
+	        	 }
+        	 cell.setCellStyle(lock);
+         }
+           
+
+ }
+
+
+ FileOutputStream out = new FileOutputStream(Filepath);
+ wb.write(out);
+ out.close();
+}
+
+public  void Sample_Bulk_Writer(String Filepath,String Sheet,ArrayList<String> map) throws IOException{
+	
+	 FileInputStream inputStream = new FileInputStream(Filepath);
+     XSSFWorkbook wb_template = new XSSFWorkbook(inputStream);
+     inputStream.close();
+
+     SXSSFWorkbook wb = new SXSSFWorkbook(wb_template); 
+     wb.setCompressTempFiles(true);
+
+     SXSSFSheet sh = (SXSSFSheet) wb.getSheet(Sheet);
+     sh.setRandomAccessWindowSize(100);
+     
+     XSSFCellStyle lock=(XSSFCellStyle) wb.createCellStyle();
+     lock.setAlignment(HorizontalAlignment.LEFT);
+     XSSFFont font= (XSSFFont) wb.createFont();
+     font.setFontHeightInPoints((short)10);
+     font.setFontName("Verdana");
+     font.setColor(IndexedColors.BLACK.getIndex());
+     font.setBold(false);
+     font.setItalic(false);
+     lock.setFont(font);
+     lock.setBorderTop(BorderStyle.MEDIUM);
+     lock.setBorderRight(BorderStyle.MEDIUM);
+     lock.setBorderBottom(BorderStyle.MEDIUM);
+     lock.setBorderLeft(BorderStyle.MEDIUM);
+   
+      
+      for(int rownum = 1; rownum <= 50; rownum++){
+    	  if(map.size()>=rownum) {
+    	  
+         Row row = sh.createRow(rownum);
+         String[] act=map.get(rownum-1).split(" \\| ");
+     
+         for(int i=0;i<act.length;i++){
+        	// sh.autoSizeColumn(i);
+        	 Cell cell = row.createCell(i);  
+        	 if(Strings.isNullOrEmpty(act[i])){
+	        	 cell.setCellValue(act[i]);
+	        	 }
+	        	 else {
+	        		 cell.setCellValue(act[i].trim()); 
+	        	 }
+        	 cell.setCellStyle(lock);
+         }
+           
+    	  }
+ }
+
+
+ FileOutputStream out = new FileOutputStream(Filepath);
+ wb.write(out);
+ out.close();
+}
+
+
+
+
+public  void Duplicate_Bulk_Writer(String Filepath,String Sheet,ArrayList<String> map) throws IOException{
+	
+	 FileInputStream inputStream = new FileInputStream(Filepath);
+     XSSFWorkbook wb_template = new XSSFWorkbook(inputStream);
+     inputStream.close();
+
+     SXSSFWorkbook wb = new SXSSFWorkbook(wb_template); 
+     wb.setCompressTempFiles(true);
+
+     SXSSFSheet sh = (SXSSFSheet) wb.getSheet(Sheet);
+     sh.setRandomAccessWindowSize(100);
+     
+     XSSFCellStyle lock=(XSSFCellStyle) wb.createCellStyle();
+     lock.setAlignment(HorizontalAlignment.LEFT);
+     XSSFFont font= (XSSFFont) wb.createFont();
+     font.setFontHeightInPoints((short)10);
+     font.setFontName("Verdana");
+     font.setColor(IndexedColors.BLACK.getIndex());
+     font.setBold(false);
+     font.setItalic(false);
+     lock.setFont(font);
+     lock.setBorderTop(BorderStyle.MEDIUM);
+     lock.setBorderRight(BorderStyle.MEDIUM);
+     lock.setBorderBottom(BorderStyle.MEDIUM);
+     lock.setBorderLeft(BorderStyle.MEDIUM);
+    
+   
+      for(int rownum = 1; rownum <= 100; rownum++){
+    	  if(map.size()>=rownum) {
+    	  
+         Row row = sh.createRow(rownum);
+         
+         String[] act=map.get(rownum-1).split(" \\| ");
+	     
+         for(int i=0;i<act.length;i++){
+         
+        	// sh.autoSizeColumn(0);
+        	 Cell cell = row.createCell(i);  
+        	 if(Strings.isNullOrEmpty(act[i])){
+	        	 cell.setCellValue(act[i]);
+	        	 }
+	        	 else {
+	        		 cell.setCellValue(act[i].trim()); 
+	        	 }
+        	 cell.setCellStyle(lock);
+         }
+           
+    	  }
+ }
+
+
+ FileOutputStream out = new FileOutputStream(Filepath);
+ wb.write(out);
+ out.close();
+}
+
+public  void Count_Write(String Filepath,String Sheet) throws IOException{
+	
+	 FileInputStream inputStream = new FileInputStream(Filepath);
+     XSSFWorkbook wb_template = new XSSFWorkbook(inputStream);
+     inputStream.close();
+
+     SXSSFWorkbook wb = new SXSSFWorkbook(wb_template); 
+     wb.setCompressTempFiles(true);
+
+     SXSSFSheet sh = (SXSSFSheet) wb.getSheet(Sheet);
+     sh.setRandomAccessWindowSize(100);
+     
+     XSSFCellStyle lock=(XSSFCellStyle) wb.createCellStyle();
+     lock.setAlignment(HorizontalAlignment.LEFT);
+     XSSFFont font= (XSSFFont) wb.createFont();
+     font.setFontHeightInPoints((short)10);
+     font.setFontName("Verdana");
+     font.setColor(IndexedColors.BLACK.getIndex());
+     font.setBold(true);
+     font.setItalic(false);
+     lock.setFont(font);
+     lock.setBorderTop(BorderStyle.MEDIUM);
+     lock.setBorderRight(BorderStyle.MEDIUM);
+     lock.setBorderBottom(BorderStyle.MEDIUM);
+     lock.setBorderLeft(BorderStyle.MEDIUM);
+     
+     int row_count=1;
+     
+             Row row1 = sh.createRow(row_count);
+        	// sh.autoSizeColumn(row_count);
+        	 Cell cell1 = row1.createCell(0); 
+        	 Cell cell2 = row1.createCell(1); 
+        	 cell1.setCellValue("Total Source count");
+        	 cell2.setCellValue(String.valueOf(Total_Src_Count));
+        	 cell1.setCellStyle(lock);
+        	 cell2.setCellStyle(lock);
+        	 
+        	 
+        	 row_count++;
+        	 
+        	 Row row2 = sh.createRow(row_count);
+        	 //sh.autoSizeColumn(row_count);
+        	 Cell cell3 = row2.createCell(0); 
+        	 Cell cell4 = row2.createCell(1); 
+        	 cell3.setCellValue("Total Target count");
+        	 cell4.setCellValue(String.valueOf(Total_Tgt_Count));
+        	 cell3.setCellStyle(lock);
+        	 cell4.setCellStyle(lock);
+
+
+        	 row_count= row_count+2;
+
+        	 Row row3 = sh.createRow(row_count);
+        	 //sh.autoSizeColumn(row_count);
+        	 Cell cell5 = row3.createCell(0); 
+        	 Cell cell6 = row3.createCell(1); 
+        	 cell5.setCellValue("Total Source Duplicate");
+        	 cell6.setCellValue(String.valueOf(Src_duplicate.size()));
+        	 cell5.setCellStyle(lock);
+        	 cell6.setCellStyle(lock);
+        	 
+        	 row_count++;
+        	 
+        	 Row row4 = sh.createRow(row_count);
+        	// sh.autoSizeColumn(row_count);
+        	 Cell cell7 = row4.createCell(0); 
+        	 Cell cell8 = row4.createCell(1); 
+        	 cell7.setCellValue("Total Target Duplicate");
+        	 cell8.setCellValue(String.valueOf(Tgt_duplicate.size()));
+        	 cell7.setCellStyle(lock);
+        	 cell8.setCellStyle(lock);
+        	 
+        	 row_count= row_count+2;
+        	 
+        	 Row row5 = sh.createRow(row_count);
+        	 //sh.autoSizeColumn(row_count);
+        	 Cell cell9 = row5.createCell(0); 
+        	 Cell cell10 = row5.createCell(1); 
+        	 cell9.setCellValue("Source Missing count");
+        	 cell10.setCellValue(String.valueOf(Src_missing_count));
+        	 cell9.setCellStyle(lock);
+        	 cell10.setCellStyle(lock);
+        	 
+        	 row_count++;
+        	 
+        	 Row row6 = sh.createRow(row_count);
+        	 //sh.autoSizeColumn(row_count);
+        	 Cell cell11 = row6.createCell(0); 
+        	 Cell cell12 = row6.createCell(1); 
+        	 cell11.setCellValue("Target Missing count");
+        	 cell12.setCellValue(String.valueOf(Tgt_missing_count));
+        	 cell11.setCellStyle(lock);
+        	 cell12.setCellStyle(lock);
+        	 
+        	 row_count= row_count+2;
+        	 
+        	 Row row7 = sh.createRow(row_count);
+        	 //sh.autoSizeColumn(row_count);
+        	 Cell cell13 = row7.createCell(0);
+        	 Cell cell14 = row7.createCell(1); 
+        	 cell13.setCellValue("Total Data Mismatch Record");
+        	 cell14.setCellValue(String.valueOf(Data_mismatch_count));
+        	 cell13.setCellStyle(lock);
+        	 cell14.setCellStyle(lock);
+        	 
+        	 
+        	 row_count++;
+        	 
+        	 for(int i=1;i<=Column_Mismatch.size();i++) {
+        			
+        			if(Column_Mismatch.get(i)>0) {
+        				
+        				 Row row8 = sh.createRow(row_count);
+        	        	 //sh.autoSizeColumn(row_count);
+        	        	 Cell cell15 = row8.createCell(0);
+        	        	 Cell cell16 = row8.createCell(1); 
+        	        	 
+        	        	 cell15.setCellValue(Table_column.get(i));
+        	        	 cell16.setCellValue(String.valueOf(Column_Mismatch.get(i)));
+        	        	 cell15.setCellStyle(lock);
+        	        	 cell16.setCellStyle(lock);
+        			
+        	        	 row_count++;
+        			}
+        		}
+        	 
+
+
+ FileOutputStream out = new FileOutputStream(Filepath);
+ wb.write(out);
+ out.close();
+}
+
+
+public  void Summary_Write(String Filepath,String Sheet) throws IOException{
+	
+	 FileInputStream inputStream = new FileInputStream(Filepath);
+     XSSFWorkbook wb_template = new XSSFWorkbook(inputStream);
+     inputStream.close();
+
+     SXSSFWorkbook wb = new SXSSFWorkbook(wb_template); 
+     wb.setCompressTempFiles(true);
+
+     SXSSFSheet sh = (SXSSFSheet) wb.getSheet(Sheet);
+     sh.setRandomAccessWindowSize(100);
+     
+     lock_Final=(XSSFCellStyle) wb.createCellStyle();
+     lock_Final.setAlignment(HorizontalAlignment.LEFT);
+     XSSFFont font= (XSSFFont) wb.createFont();
+     font.setFontHeightInPoints((short)10);
+     font.setFontName("Verdana");
+     font.setColor(IndexedColors.BLACK.getIndex());
+     font.setBold(true);
+     font.setItalic(false);
+     lock_Final.setFont(font);
+     lock_Final.setBorderTop(BorderStyle.MEDIUM);
+     lock_Final.setBorderRight(BorderStyle.MEDIUM);
+     lock_Final.setBorderBottom(BorderStyle.MEDIUM);
+     lock_Final.setBorderLeft(BorderStyle.MEDIUM);
+     boolean flag=false;
+     
+     int row_count=0;
+     
+             row_final = sh.createRow(row_count);
+        
+             cell_value("Type",0);
+             cell_value("Column",1);
+             cell_value("Result",2);
+        	 
+        	 
+        	 
+        	 row_count++;
+        	 row_final = sh.createRow(row_count);
+        	 if(Count_Mismatch_Flag) {
+        		 cell_value("Count_Validation",0);
+	             cell_value("NA",1);
+	             cell_value("Fail",2);
+	             flag=true;
+	             
+	             reportStep_only("Count Mismatch", "Fail");
+        		 
+        	 }
+        	
+        	 else {
+        		 
+        		 cell_value("Count_Validation",0);
+	             cell_value("NA",1);
+	             cell_value("Pass",2);
+	             reportStep_only("Count matched", "Pass");
+        		 
+        	 }
+
+
+        	 row_count++;
+
+        	 row_final = sh.createRow(row_count);
+        	 if(Source_Missing_Flag) {
+        		 cell_value("Source_Missing_Validation",0);
+	             cell_value("NA",1);
+	             cell_value("Fail",2);
+                   flag=true;
+	             
+	             reportStep_only("Source_Missing_Validation", "Fail");
+        		 
+        	 }
+        	
+        	 else {
+        		 
+        		 cell_value("Source_Missing_Validation",0);
+	             cell_value("NA",1);
+	             cell_value("Pass",2);
+
+	             reportStep_only("Source_Missing_Validation", "Pass");  
+        		 
+        	 }
+        	 
+        	 row_count++;
+        	 
+        	 row_final = sh.createRow(row_count);
+        	 if(Target_Missing_Flag) {
+        		 cell_value("Target_Missing_Validation",0);
+	             cell_value("NA",1);
+	             cell_value("Fail",2);
+                  flag=true;
+	             
+	             reportStep_only("Target_Missing_Validation", "Fail");
+        		 
+        	 }
+        	
+        	 else {
+        		 
+        		 cell_value("Target_Missing_Validation",0);
+	             cell_value("NA",1);
+	             cell_value("Pass",2);
+	             reportStep_only("Target_Missing_Validation", "Pass");
+        		 
+        	 }
+        	 
+        	 row_count++;
+        	 
+        	 row_final= sh.createRow(row_count);
+        	
+        	 if(Source_Duplicate_Flag) {
+        		 cell_value("Source_Duplicate_Validation",0);
+	             cell_value("NA",1);
+	             cell_value("Fail",2);
+                   flag=true;
+	             
+	             reportStep_only("Source_Duplicate_Validation", "Fail");
+        		 
+        		 
+        	 }
+        	
+        	 else {
+        		 
+        		 cell_value("Source_Duplicate_Validation",0);
+	             cell_value("NA",1);
+	             cell_value("Pass",2);
+	             reportStep_only("Source_Duplicate_Validation", "Pass");
+        		 
+        	 }
+        	 
+        	 row_count++;
+        	 
+        	 row_final= sh.createRow(row_count);
+	        	
+        	 if(Target_Duplicate_Flag) {
+        		 cell_value("Target_Duplicate_Validation",0);
+	             cell_value("NA",1);
+	             cell_value("Fail",2);
+                  flag=true;
+	             
+	             reportStep_only("Target_Duplicate_Validation", "Fail");
+        		 
+        	 }
+        	
+        	 else {
+        		 
+        		 cell_value("Target_Duplicate_Validation",0);
+	             cell_value("NA",1);
+	             cell_value("Pass",2);
+	             reportStep_only("Target_Duplicate_Validation", "Pass");
+        		 
+        	 }
+        	 
+        	
+        	 
+        	
+        	 for(int i=1;i<=Column_Mismatch.size();i++){
+        		 row_count++;
+        		 row_final = sh.createRow(row_count);
+        		 cell_value("Data_Validation",0);
+	             cell_value(Table_column.get(i),1);
+	             if(Column_Mismatch.get(i)>0){
+	            	 cell_value("Fail",2);
+	            	 flag=true;
+	    		}
+	    		else{
+	    			 cell_value("Pass",2);
+	    		}
+	    		
+	             
+        		}
+        	 
+        	
+        	 
+	        	
+        	 for(int i=1;i<=Table_column_key.size();i++){
+        		 row_count++;
+        		 row_final = sh.createRow(row_count);
+        		 cell_value("Data_Validation",0);
+	             cell_value(Table_column_key.get(i),1);
+	             if(Target_Missing_Flag || Source_Missing_Flag ){
+	            	 cell_value("Fail",2);
+	    		}
+	    		else{
+	    			 cell_value("Pass",2);
+	    		}
+	    		  
+	             
+        		}
+        	 
+        	 if(flag) {
+        		 
+        		 reportStep_only("Source and Target File are not Matched", "Fail");
+        		// Assert.assertTrue(false);
+        		 
+        	 }
+        	 
+
+
+ FileOutputStream out = new FileOutputStream(Filepath);
+ wb.write(out);
+ out.close();
+}
+
+
+
+public  void cell_value(String val,int cell) {
+   
+   cell_final=row_final.createCell(cell); 
+   cell_final.setCellValue(val);
+   cell_final.setCellStyle(lock_Final);
+	
+   
+}
+
+
+public void Target_Delimiter_Exe() throws IOException{
+ 	
+	
+	  BufferedReader reader1 = new BufferedReader(new FileReader(Input_File_Path_Target));
+	  long Tgt_count=0;
+	  int len=0;
+	  String line1;
+	  String temp_val = null;
+  
+   Tgt_Column_Name=Tgt_Col_Name.split(",");
+   Tgt_Column_Count=Tgt_Column_Name.length;
+   int gg=0;
+   int ff=0;
+   
+   for(int i=0;i<Tgt_Column_Name.length;i++)
+   {
+ 	  
+   if(!(Key_Column_identifier(i))) {
+		 gg++;
+	     Column_Mismatch.put(gg, (long)0);
+		 Table_column.put(gg,Tgt_Column_Name[i].trim());
+	 }
+   else {
+  	 
+  	 ff++;
+			
+	   Table_column_key.put(ff,Tgt_Column_Name[i].trim());
+  	 
+   }
+   
+   }
+   
+   if(Head.equalsIgnoreCase("Yes")) {
+  line1 = reader1.readLine();  
+  line1 = reader1.readLine();
+   }
+   else {
+	   line1 = reader1.readLine(); 
+   }
+		
+   
+   while (line1 != null)
+   {
+ 	  String key_val="";
+ 	  
+ 	  String[] v=line1.split(Src_Symbol) ;
+ 	  
+ 	  if(Src_EOR.equalsIgnoreCase("Yes")) {
+ 		  len=v.length-1;
+ 	  }
+ 	  else {
+ 		   len=v.length;
+ 	  }
+ 	 
+ 	  
+ 	  for(int i=0;i<len;i++)
+       {
+ 		 
+ 		  if(i==0) {
+ 			  
+ 			  if (Strings.isNullOrEmpty(v[i])) {
+					  key_val=key_val+"";
+				  }
+				  else {
+					  key_val=key_val+v[i].trim();
+				  }
+				 
+ 			  
+ 		  }
+ 		  else {
+ 			  
+ 			  if (Strings.isNullOrEmpty(v[i])) {
+					  key_val=key_val+" | "+"";
+				  }
+				  else {
+					  key_val=key_val+" | "+v[i].trim();
+				  }
+ 			   
+       }
+ 	  
+       }
+ 	  
+ 	  
+ 	     Tgt_count++;
+	    	 int temp=Tgt_data.size();
+			   Tgt_data.add(key_val);
+			   temp_val=key_val;
+			 if(temp==Tgt_data.size()) {
+				 Tgt_duplicate.add(key_val);
+			 }
+ 	  
+ 	  
+ 	  line1 = reader1.readLine();
+       
+        
+   }
+		
+   
+   if(Foot.equalsIgnoreCase("Yes")) {
+	   Tgt_data.remove(temp_val);
+	    }
+   
+   reader1.close();
+		 
+		 if(Tgt_Column_Name.length==Keyvalue_Column.length) {
+	   		 Non_Primary=false; 
+	   	 }
+		   
+		 Total_Tgt_Count=Tgt_count;
+		 Total_Tgt_Count_no_dup=Tgt_data.size();
+		 Tgt_duplicate_count=Tgt_duplicate.size();
+		
+		 
+		 Target_dup();
+		
+		 System.out.println("Target completed");
+	 }
+
+
+public void Target_CSV_Exe() throws IOException{
+ 	
+	
+	  BufferedReader reader1 = new BufferedReader(new FileReader(Input_File_Path_Target));
+	  long Tgt_count=0;
+	  int len=0;
+	  
+	  String line = reader1.readLine();
+
+ Tgt_Column_Name=line.split(",");
+ Tgt_Column_Count=Tgt_Column_Name.length;
+ int gg=0;
+ int ff=0;
+ 
+ for(int i=0;i<Tgt_Column_Name.length;i++)
+ {
+	  
+ if(!(Key_Column_identifier(i))) {
+		 gg++;
+	     Column_Mismatch.put(gg, (long)0);
+		 Table_column.put(gg,Tgt_Column_Name[i].trim());
+	 }
+ else {
+	 
+	 ff++;
+			
+	   Table_column_key.put(ff,Tgt_Column_Name[i].trim());
+	 
+ }
+ 
+ }
+ 
+ 
+ String line1 = reader1.readLine();
+		
+ 
+ while (line1 != null)
+ {
+	  String key_val="";
+	  
+	  String[] v=line1.split(Src_Symbol) ;
+	  
+	  if(Src_EOR.equalsIgnoreCase("Yes")) {
+		  len=v.length-1;
+	  }
+	  else {
+		   len=v.length;
+	  }
+	 
+	  
+	  for(int i=0;i<len;i++)
+     {
+		 
+		  if(i==0) {
+			  
+			  if (Strings.isNullOrEmpty(v[i])) {
+					  key_val=key_val+"";
+				  }
+				  else {
+					  key_val=key_val+v[i].trim();
+				  }
+				 
+			  
+		  }
+		  else {
+			  
+			  if (Strings.isNullOrEmpty(v[i])) {
+					  key_val=key_val+" | "+"";
+				  }
+				  else {
+					  key_val=key_val+" | "+v[i].trim();
+				  }
+			   
+     }
+	  
+     }
+	  
+	  
+	     Tgt_count++;
+	    	 int temp=Tgt_data.size();
+			   Tgt_data.add(key_val);
+			 if(temp==Tgt_data.size()) {
+				 Tgt_duplicate.add(key_val);
+			 }
+	  
+	  
+	  line1 = reader1.readLine();
+     
+      
+ }
+			
+ 
+ reader1.close();
+		 
+		 if(Tgt_Column_Name.length==Keyvalue_Column.length) {
+	   		 Non_Primary=false; 
+	   	 }
+		   
+		 Total_Tgt_Count=Tgt_count;
+		 Total_Tgt_Count_no_dup=Tgt_data.size();
+		 Tgt_duplicate_count=Tgt_duplicate.size();
+		
+		 
+		 Target_dup();
+		
+		 System.out.println("Target completed");
+	 }
+
+
+public void Target_fixed_Exe() throws IOException, InterruptedException{
+	 
+	 
+	 String[][] mydata=readXLSX(HRHUB_Sheet,HRHUB_Index_Num);
+	 String line1=null;	
+	 String temp_val=null;
+	 Tgt_Column_Name=Tgt_Col_Name.split(",");
+	   Tgt_Column_Count=Tgt_Column_Name.length;
+	   int gg=0;
+	   int ff=0;
+	   
+	   for(int i=0;i<Tgt_Column_Name.length;i++)
+	   {
+	 	  
+	   if(!(Key_Column_identifier(i))) {
+			 gg++;
+		     Column_Mismatch.put(gg, (long)0);
+			 Table_column.put(gg,Tgt_Column_Name[i].trim());
+		 }
+	   else {
+	  	 
+	  	 ff++;
+				
+		   Table_column_key.put(ff,Tgt_Column_Name[i].trim());
+	  	 
+	   }
+	   
+	   }
+	   
+	   
+		 BufferedReader reader1 = new BufferedReader(new FileReader(Input_File_Path_Target));
+		  long Tgt_count=0;
+		  int len=0;
+		  
+		  if(Head.equalsIgnoreCase("Yes")) {
+			  line1 = reader1.readLine();  
+			  line1 = reader1.readLine();
+			   }
+			   else {
+				   line1 = reader1.readLine(); 
+			   }
+	   
+	 
+			
+	    
+	    while (line1 != null)
+	    {
+	  	  String key_val="";
+	  	  
+	  	  
+	  	  for(int i=1;i<mydata[0].length;i++)
+	        {
+	  		  
+	  		  int start=Integer.parseInt(mydata[1][i])-1;
+	  		  int end=start + Integer.parseInt(mydata[2][i]);
+	  		  String v=line1.substring(start, end);
+	  		 
+	  		  if(i==1) {
+	  			  
+	  			  if (Strings.isNullOrEmpty(v)) {
+						  key_val=key_val+"";
+					  }
+					  else {
+						  key_val=key_val+v.trim();
+					  }
+					 
+	  			  
+	  		  }
+	  		  else {
+	  			  
+	  			  if (Strings.isNullOrEmpty(v)) {
+						  key_val=key_val+" | "+"";
+					  }
+					  else {
+						  key_val=key_val+" | "+v.trim();
+					  }
+	  			   
+	        }
+	  	  
+	        }
+	  	  
+	  	  
+	  	     Tgt_count++;
+		    	 int temp=Tgt_data.size();
+				   Tgt_data.add(key_val);
+				   temp_val=key_val;
+				 if(temp==Tgt_data.size()) {
+					 Tgt_duplicate.add(key_val);
+				 }
+	  	  
+	  	  
+	  	  line1 = reader1.readLine();
+	        
+	         
+	    }
+				
+	    
+	    if(Foot.equalsIgnoreCase("Yes")) {
+	 	   Tgt_data.remove(temp_val);
+	 	    }
+	    reader1.close();
+	    
+	    if(Tgt_Column_Name.length==Keyvalue_Column.length) {
+	   		 Non_Primary=false; 
+	   	 }
+		   
+		 Total_Tgt_Count=Tgt_count;
+		 Total_Tgt_Count_no_dup=Tgt_data.size();
+		 Tgt_duplicate_count=Tgt_duplicate.size();
+		 System.out.println("Tgttotal count : "+Total_Tgt_Count);
+		 System.out.println("Tgttotal count no dup : "+Total_Tgt_Count_no_dup);
+		 System.out.println("Tgt Duplicate Record count : "+Tgt_duplicate_count);
+		 
+		 Target_dup();
+		
+			 
+	
+	 
+	 
+}
+
+
+public void Source_fixed_Exe() throws IOException, InterruptedException{
+	 
+	
+	 
+	 String[][] mydata=readXLSX(HRHUB_Sheet,HRHUB_Index_Num);
+	 
+	 Src_Column_Name=Tgt_Column_Name;
+     Src_Column_Count=Tgt_Column_Name.length;
+  
+		
+		 BufferedReader reader1 = new BufferedReader(new FileReader(Input_File_Path_Source));
+		  long Src_count=0;
+		  int len=0;
+	   
+	   
+	    
+	    String line1 = reader1.readLine();
+			
+	    
+	    while (line1 != null)
+	    {
+	  	  String key_val="";
+	  	  
+	  	  
+	  	  for(int i=1;i<mydata[0].length;i++)
+	        {
+	  		  
+	  		  int start=Integer.parseInt(mydata[1][i])-1;
+	  		  int end=start + Integer.parseInt(mydata[2][i]);
+	  		  String v=line1.substring(start, end);
+	  		 
+	  		  if(i==1) {
+	  			  
+	  			  if (Strings.isNullOrEmpty(v)) {
+						  key_val=key_val+"";
+					  }
+					  else {
+						  key_val=key_val+v.trim();
+					  }
+					 
+	  			  
+	  		  }
+	  		  else {
+	  			  
+	  			  if (Strings.isNullOrEmpty(v)) {
+						  key_val=key_val+" | "+"";
+					  }
+					  else {
+						  key_val=key_val+" | "+v.trim();
+					  }
+	  			   
+	        }
+	  	  
+	        }
+	  	  
+	  	  
+	  	     Src_count++;
+		    	 int temp=Src_data.size();
+				   Src_data.add(key_val);
+				 if(temp==Src_data.size()) {
+					 Src_duplicate.add(key_val);
+				 }
+	  	  
+	  	  
+	  	  line1 = reader1.readLine();
+	        
+	         
+	    }
+				
+	    
+	    reader1.close();
+	    
+	    if(Src_Column_Name.length==Keyvalue_Column.length) {
+	   		 Non_Primary=false; 
+	   	 }
+		   
+		 Total_Src_Count=Src_count;
+		 Total_Src_Count_no_dup=Src_data.size();
+		 Src_duplicate_count=Src_duplicate.size();
+		 System.out.println("Srctotal count : "+Total_Src_Count);
+		 System.out.println("Srctotal count no dup : "+Total_Src_Count_no_dup);
+		 System.out.println("Src Duplicate Record count : "+Src_duplicate_count);
+		 Source_dup();
+		
+			 
+	
+	 
+	 
+}
+
+
+
+
+
+
+
+ 
+ 
+ 
+
+
+
+ 
+ 
+
+
+
+}
