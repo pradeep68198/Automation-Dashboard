@@ -1,0 +1,76 @@
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
+
+import org.apache.poi.ss.usermodel.DataFormatter;
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
+
+public class XML_Generator_Suite{
+	
+	public static void main(String[] args) throws InterruptedException, IOException {
+		
+       String[][] Mydata=readXLSX("\\\\MIDP-SFS-010\\checogdata\\SIT Data\\SIT-Informatics\\006-General\\Automation_Utilities\\CVS_Finance_Data\\Data\\Driver_Macro.xlsm","Setup");
+		
+		
+		
+		PrintWriter writer=new PrintWriter("Testng.xml");
+		writer.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+		writer.println("<!DOCTYPE suite SYSTEM \"http://testng.org/testng-1.0.dtd\" >");
+		writer.println("<suite name=\"CVS E2E Automation\">");
+		for(int i=1;i<Mydata[0].length;i++) {
+			if(Mydata[2][i].equalsIgnoreCase("Y")) {
+				String Script = Mydata[0][i];
+				String Script1=Mydata[1][i];
+		writer.println("<test name=\""+Script+"\" >");
+		writer.println("<parameter name=\"Excelsheet\" value=\""+Script+"\" />");
+		writer.println(" <classes>");
+		writer.println(" <class name=\"com.FMS.Tests."+Script1+"\"/> ");
+		writer.println("</classes>");
+		writer.println("</test>");
+			}
+		}
+		writer.println("</suite>");
+		writer.close();
+		Thread.sleep(3000);
+	}
+	
+	public static String[][] readXLSX(String Filepath,String Sheet) throws IOException{    	 
+  		File excel=new File(Filepath);  		
+  		FileInputStream fis=new FileInputStream(excel);  		
+  		String Value=null;
+  		XSSFWorkbook book=new XSSFWorkbook(fis);  		
+  		XSSFSheet ws=book.getSheet(Sheet);  		
+  		XSSFCell cell;  		
+  		DataFormatter format=new DataFormatter();
+  		int rowNum=ws.getLastRowNum()+1;
+  		int colNum=ws.getRow(0).getLastCellNum();
+  		
+  		String[][] Parameter=new String[(colNum)][(rowNum)];
+  		for(int i=0;i<rowNum;i++){
+  			XSSFRow row=ws.getRow(i);
+  			for(int j=0;j<colNum;j++){
+  				
+  				cell=row.getCell(j);
+  				if(!(cell==null)){
+  					Value=format.formatCellValue(cell);
+  				}
+  				else{
+  					Value=null;
+  				}
+  				Parameter[j][i]=Value;
+  			}
+  			
+  		}
+  		book.close();
+  		return Parameter;
+  		
+  	}
+
+}
