@@ -1,0 +1,170 @@
+package com.FMS.Utilities;
+
+import java.awt.AWTException;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.net.URISyntaxException;
+import java.sql.SQLException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Properties;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactoryConfigurationError;
+
+import org.apache.http.auth.AuthenticationException;
+import org.openqa.selenium.By;
+import org.openqa.selenium.remote.RemoteWebDriver;
+import org.testng.ITestContext;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.AfterSuite;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.BeforeSuite;
+import org.testng.annotations.Parameters;
+import org.testng.annotations.Test;
+import org.xml.sax.SAXException;
+
+import com.FMS.Scripts.Create_Cost_Center;
+import com.relevantcodes.extentreports.ExtentReports;
+import com.relevantcodes.extentreports.ExtentTest;
+
+
+public class Driver_Wrapper extends General_Wrapper {
+	
+	public Properties prob;
+	//public Create_Cost_Center CCC;
+	
+	public int i=0;
+	
+	
+	public Driver_Wrapper() throws IOException{
+		
+		super();
+		prob=new Properties();
+		
+		//CCC=new Create_Cost_Center();
+	}
+	
+
+	@BeforeClass
+	@Parameters({"Excelsheet"})
+	public void beforeClass(String Excelsheet,ITestContext context) throws FileNotFoundException, IOException, InterruptedException, AWTException {
+		
+		String className = getClass().getSimpleName();
+		System.out.println(className);
+		Excel_sheet=Excelsheet;
+		formatter1 = new SimpleDateFormat("dd_MM_yyyy_hh_mm");
+		String folder_Name1=Excel_sheet+"_"+formatter1.format(new Date());
+		String folder_Name=folder_Name1+"\\";
+		prob.load(new FileInputStream(new File("Object.properties")));
+		ML_Username=prob.getProperty("Username");
+		ML_Pwd=prob.getProperty("Password");
+		Transfer_Job=prob.getProperty("Transfer_Job");
+		Cost_Center_File=prob.getProperty("Cost_Center_File");
+		Data_Sheet=prob.getProperty("Data_Sheet")+Excel_sheet+".xlsx";
+		Result_Path=prob.getProperty("Result_Path")+folder_Name;
+		Cost_Center_Page=prob.getProperty("Cost_Center_Page");
+		FMS_ML_URL=prob.getProperty("FMS_ML_URL");
+		HR_HUB_ML_URL=prob.getProperty("HR_HUB_ML_URL");
+		Report_Query_Path=prob.getProperty("Report_Query_Path");
+		Finance_Report=prob.getProperty("Finance_Report");
+		HRHUB_Sheet=prob.getProperty("HRHUB_Sheet");
+		Img_Path=Result_Path+"Screenshots\\";
+		Report_Path=Result_Path+"Reports\\";
+		Doc_Path=Result_Path+"Documents\\";
+		Download_Path=Result_Path+"Download\\";
+		Flow_Diagram=Img_Path+"General.jpg";
+		
+		File files1 = new File(Img_Path);
+        if (!files1.exists()) {
+            if (files1.mkdirs()) {
+                System.out.println("Folder created");
+            } else {
+                System.out.println("Failed to create directories!");
+            }
+        }
+        File files2 = new File(Doc_Path);
+        if (!files2.exists()) {
+            if (files2.mkdirs()) {
+                System.out.println("Folder created");
+            } else {
+                System.out.println("Failed to create directories!");
+            }
+        }
+        File files3 = new File(Report_Path);
+        if (!files3.exists()) {
+            if (files3.mkdirs()) {
+                System.out.println("Folder created");
+            } else {
+                System.out.println("Failed to create directories!");
+            }
+        }
+        
+        File files4 = new File(Download_Path);
+        if (!files4.exists()) {
+            if (files4.mkdirs()) {
+                System.out.println("Folder created");
+            } else {
+                System.out.println("Failed to create directories!");
+            }
+        }
+        
+     
+		startResult();
+		 
+		File_Copy("General.jpg",Flow_Diagram);
+		
+
+		
+	}
+	
+	
+	
+
+	@BeforeMethod
+	
+	public void beforeMethod(Method testMethod) throws IOException, InterruptedException, AWTException{
+		
+		
+		Test test1 = testMethod.getAnnotation(Test.class);
+		General_Wrapper.testCaseName=testMethod.getName()+"_Iteration_"+i++;
+		General_Wrapper.testDescription=test1.description();
+		General_Wrapper.category="Finance Application POC";
+		General_Wrapper.authors="Satheesh";
+		test = startTestCase(testCaseName, testDescription);
+		test.assignCategory(category);
+		test.assignAuthor(authors);
+		 
+		Browser_Setup("Chrome");
+		
+		
+	}
+		
+	@AfterClass
+	public void afterClass() {
+		
+		endResult();
+		
+		
+	}
+	
+	
+	@AfterMethod
+	public void afterMethod() throws IOException {
+		
+		driver.quit();
+		endTestcase();
+
+	
+		
+	}
+	
+}
+
