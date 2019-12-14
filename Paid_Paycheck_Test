@@ -1,0 +1,61 @@
+package com.FMS.Tests;
+
+import java.awt.AWTException;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.sql.SQLException;
+import java.text.ParseException;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactoryConfigurationError;
+
+import org.apache.http.auth.AuthenticationException;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Parameters;
+import org.testng.annotations.Test;
+import org.xml.sax.SAXException;
+
+import com.FMS.Scripts.Create_Cost_Center;
+import com.FMS.Scripts.Paid_Paycheck_details_script;
+import com.FMS.Utilities.Driver_Wrapper;
+import com.FMS.Utilities.General_Wrapper;
+import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.SftpException;
+
+public class Paid_Paycheck_Test extends Driver_Wrapper{
+	
+	
+	 public Paid_Paycheck_details_script obj;
+		
+		public Paid_Paycheck_Test() throws IOException {
+			super();
+			obj=new Paid_Paycheck_details_script();
+		}
+	
+	
+	 @Test(dataProvider = "dp" ,priority=1,description = "Validating whether user able to create cost center request - Parent only")
+	 @Parameters({"Manger_ID","CC","CC_options","Report_Type","Report_Period","Start_Date","End_Date","Pay_Cycle","Batch_job","ML_Index","HRHUB_Index"})
+	  public void Paid_Paycheck_Scenario(String Manger_ID,String CC,String CC_options,String Report_Type,String Report_Period,String Start_Date,String End_Date,String Pay_Cycle,String Batch_job,String ML_Index,String HRHUB_Index) throws InterruptedException, IOException, JSchException, ClassNotFoundException, AWTException, SQLException, SftpException, ParseException {
+
+	     
+		 obj.Report_validation(Manger_ID,CC,CC_options,Report_Type,Report_Period,Start_Date,End_Date,Pay_Cycle,Batch_job,ML_Index,HRHUB_Index);
+		
+	 
+	 
+	}
+	 
+	 
+	 @DataProvider
+	    public Object[][] dp() {
+	    	
+
+	          Object[][] data = General_Wrapper.getInputData(Data_Sheet,"Sheet1");
+	          return data;
+	    }
+ 
+	
+	
+	
+ 
+}
