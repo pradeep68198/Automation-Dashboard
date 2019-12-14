@@ -1,0 +1,126 @@
+package com.FMS.Scripts;
+
+import java.awt.AWTException;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import org.testng.Assert;
+import org.testng.util.Strings;
+
+import com.FMS.Func_Script.CSV_Excel;
+import com.FMS.Func_Script.Mark_Logic;
+import com.FMS.Utilities.Base_Class;
+import com.FMS.Utilities.File_Compare;
+import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.SftpException;
+
+public class Paid_Paycheck_details_script extends Base_Class{
+	
+	public String manager_url,manager_url1,Admin_url,Traking_ID;
+	public String[] Filedata;
+	
+	public Paid_Paycheck_details_script() throws FileNotFoundException, IOException
+	{
+		super();
+		 
+	}
+	
+	public void Report_validation(String Manger_ID,String CC,String CC_options,String Report_Type,String Report_Period,String Start_Date,String End_Date,String Pay_Cycle,String Batch_job,String ML_Index,String HRHUB_Index) throws InterruptedException, IOException, JSchException, ClassNotFoundException, AWTException, SQLException, SftpException, ParseException {
+		
+		
+		new HR_Hub_Validation().HR_Hub_Workflow(HRHUB_Index);
+		
+		
+		html_update("Starting FMS Validation");
+		if(!(Strings.isNullOrEmpty(Batch_job))) {
+		String Result=putty(Batch_job);
+		if(Result.contains("successfully ran")) {
+			html_update("FMS -Batch Jobs Ran Successfully");
+			 reportStep_only(Batch_job+" Batch Job run Successfully", "PASS");
+		}
+		else {
+			html_update("FMS - Batch Jobs Failed");
+			reportStep_only(Batch_job+" Batch Job run Failed", "FAIL");
+			Assert.assertTrue(false);
+			
+		}
+		}
+		
+		String[] result=Find_Query(ML_Index);
+		String SD=Date_converter(Start_Date);
+		String ED=Date_converter(End_Date);
+		String query= String.format(result[1],CC,SD,ED);
+		String Primary=result[2];
+		String result_file=Report_Path+"FMS_Data_Compare.xlsx";
+		String Unixquerypath=result[3];
+		String Query_Result_path="FMSQuery_output.txt";
+		html_update("FMS - Navigating to Mark Logic Query Console");
+		new Mark_Logic().ML_Launcher(result[0],query,Unixquerypath,Query_Result_path);
+		
+		
+		manager_url=Finance_Report+Manger_ID;
+		driver.get(manager_url);
+		
+		report.Cost_Center_dropdown_Action(CC);
+		report.Named_Dept_Action(CC_options);
+		report.Report_Type_dropdown_Action(Report_Type);
+		report.Date_Range_Action(Report_Period);
+		
+		if(Report_Period.contains("Date Range")) {
+		report.Start_Date_Action(Start_Date);
+		report.End_Date_Action(End_Date);
+		}
+		else {
+			report.Pay_Cycle_Period_Action(Pay_Cycle);
+		}
+		
+		report.Search_Button_Action();
+		String actual_path=report.Download_Action("CostCenterFinancialReports");
+		
+		String fileLoc = new CSV_Excel().convertCsvToXls(Download_Path,actual_path);
+		System.out.println(fileLoc);
+		
+		html_update("FMS - File Validation Begins ");
+		new File_Compare().Common_caller(Primary,result_file,Download_Path+"FMSQuery_output.txt",fileLoc);
+		//new File_Compare().FMS_Common_caller(Primary,result_file,Download_Path+Query_Result_path,actual_path);
+		
+		
+	}
+	
+	
+public String[] Find_Query(String index) throws IOException {
+		
+		String[][] data=readXLSX(Report_Query_Path,"Paid_Paycheck");
+	    String[] val = new String[4];
+		for(int i=1;i<data[0].length;i++){
+		
+		 if(data[0][i].equalsIgnoreCase(index)){
+			  
+			
+			 val[0]=data[1][i];
+			 val[1]=data[2][i];
+			 val[2]=data[3][i];
+			 val[3]=data[4][i];
+				 break;
+				 	 
+		 }	 
+		 
+		}
+		
+		
+		
+		return val;
+		
+		
+		
+		
+	}
+
+
+	
+
+}
