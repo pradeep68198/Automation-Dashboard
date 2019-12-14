@@ -1,0 +1,58 @@
+package com.FMS.Tests;
+
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.sql.SQLException;
+import java.text.ParseException;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactoryConfigurationError;
+
+import org.apache.http.auth.AuthenticationException;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Parameters;
+import org.testng.annotations.Test;
+import org.xml.sax.SAXException;
+
+import com.FMS.Scripts.Create_Cost_Center;
+import com.FMS.Utilities.Driver_Wrapper;
+import com.FMS.Utilities.General_Wrapper;
+import com.jcraft.jsch.JSchException;
+
+public class Create_CC_Parent_Test extends Driver_Wrapper{
+	
+	
+	 public Create_Cost_Center obj;
+		
+		public Create_CC_Parent_Test() throws IOException {
+			super();
+			obj=new Create_Cost_Center();
+		}
+	
+	
+	 @Test(dataProvider = "dp" ,priority=1,description = "Validating whether user able to create cost center request - Parent only")
+	 @Parameters({"Manger_ID","Admin_ID","Existing_Parent_CC","Parent_CC","Parent_CCName"  })
+	  public void Create_CC_Parent_Scenario(String Manger_ID,String Admin_ID,String Existing_Parent_CC,String Parent_CC,String Parent_CCName) throws InterruptedException, IOException, JSchException {
+
+	     
+		 obj.Create_CC_Parent(Manger_ID,Admin_ID,Existing_Parent_CC,Parent_CC,Parent_CCName);
+		
+	 
+	 
+	}
+	 
+	 
+	 @DataProvider
+	    public Object[][] dp() {
+	    	
+
+	          Object[][] data = General_Wrapper.getInputData(Data_Sheet,"Sheet1");
+	          return data;
+	    }
+ 
+	
+	
+	
+ 
+}
