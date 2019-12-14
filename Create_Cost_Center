@@ -1,0 +1,258 @@
+package com.FMS.Scripts;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import org.testng.Assert;
+import org.testng.util.Strings;
+
+import com.FMS.Utilities.Base_Class;
+import com.jcraft.jsch.JSchException;
+
+public class Create_Cost_Center extends Base_Class{
+	
+	public String manager_url,manager_url1,Admin_url,Traking_ID;
+	public String[] Filedata;
+	
+	public Create_Cost_Center() throws FileNotFoundException, IOException
+	{
+		super();
+		 
+	}
+	
+	public void Create_CC_Parent_Child(String Manger_ID,String Admin_ID,String Existing_Parent_CC,String Parent_CC,String Parent_CCName,String Cost_Center,String Cost_Center_Name,String Function_Code,String Staffing_Cost_Center,String Company_Code) throws InterruptedException, IOException, JSchException {
+		
+		
+		
+		manager_url=Cost_Center_Page+Manger_ID;
+		Admin_url=Cost_Center_Page+Admin_ID;
+		
+		driver.get(manager_url);
+		
+		Create_CC.Create_New_CCR_Action();
+		Create_CC.Request_Dropdown_Action("Create Cost Center");
+		Create_CC.Contine_Button_Action();
+		Create_CC.Request_Type_Dropdown_Action("New Parent with Child Cost Centers");
+		Create_CC.Existing_Parent_Dropdown_Action(Existing_Parent_CC);
+		Create_CC.Contine_Button_Action();
+		Create_CC.Parent_Cost_Center_Action(Parent_CC);
+		Create_CC.Parent_Cost_Center_Name_Action(Parent_CCName);
+		Create_CC.Cost_Center_Parent_Child(Cost_Center,Cost_Center_Name,Function_Code,Staffing_Cost_Center,Company_Code);
+		Create_CC.Submit_Button_Action();
+		Traking_ID=Create_CC.Success_message_Action();
+		Approve_Request();
+		File_data_Parent_Child(Manger_ID,Existing_Parent_CC,Parent_CC,Parent_CCName,Cost_Center,Cost_Center_Name,Function_Code) ;
+		 putty(Transfer_Job);
+		 //successfully ran
+		 String id=Traking_ID.replace("REQ", "");
+		 String file = String.format(Cost_Center_File,id);
+		File_Validation(Filedata,file);
+		
+	
+		
+	}
+	
+public void Create_CC_Child(String Manger_ID,String Admin_ID,String Existing_Parent_CC,String Cost_Center,String Cost_Center_Name,String Function_Code,String Staffing_Cost_Center,String Company_Code) throws InterruptedException, IOException, JSchException {
+		
+	  
+		manager_url=Cost_Center_Page+Manger_ID;
+		Admin_url=Cost_Center_Page+Admin_ID;
+		
+		driver.get(manager_url);
+		
+		Create_CC.Create_New_CCR_Action();
+		Create_CC.Request_Dropdown_Action("Create Cost Center");
+		Create_CC.Contine_Button_Action();
+		Create_CC.Request_Type_Dropdown_Action("New Child Cost Centers Only");
+		Create_CC.Existing_Parent_Dropdown_Action(Existing_Parent_CC);
+		Create_CC.Contine_Button_Action();
+		Create_CC.Cost_Center_Child(Cost_Center,Cost_Center_Name,Function_Code,Staffing_Cost_Center,Company_Code);
+		Create_CC.Submit_Button_Action();
+		Traking_ID=Create_CC.Success_message_Action();
+		Approve_Request();
+		 File_data_Child(Manger_ID,Existing_Parent_CC,Cost_Center,Cost_Center_Name,Function_Code);
+		 putty(Transfer_Job);
+		 String id=Traking_ID.replace("REQ", "");
+		 String file = String.format(Cost_Center_File,id);
+		 File_Validation(Filedata,file);
+	
+		
+	}
+
+public void Create_CC_Parent(String Manger_ID,String Admin_ID,String Existing_Parent_CC,String Parent_CC,String Parent_CCName) throws InterruptedException, IOException, JSchException {
+	
+	System.out.println(Manger_ID);
+	System.out.println(Admin_ID);
+	System.out.println(Existing_Parent_CC);
+	System.out.println(Parent_CC);
+	
+	manager_url=Cost_Center_Page+Manger_ID;
+	Admin_url=Cost_Center_Page+Admin_ID;
+	
+	driver.get(manager_url);
+	
+	Create_CC.Create_New_CCR_Action();
+	Create_CC.Request_Dropdown_Action("Create Cost Center");
+	Create_CC.Contine_Button_Action();
+	Create_CC.Request_Type_Dropdown_Action("New Parent Only");
+	Create_CC.Existing_Parent_Dropdown_Action(Existing_Parent_CC);
+	Create_CC.Contine_Button_Action();
+	Create_CC.Parent_Cost_Center_Action(Parent_CC);
+	Create_CC.Parent_Cost_Center_Name_Action(Parent_CCName);
+	//scrolldown();
+	Create_CC.Submit_Button_Action();
+	Traking_ID=Create_CC.Success_message_Action();
+	Approve_Request();
+	File_data_Parent(Manger_ID,Existing_Parent_CC,Parent_CC,Parent_CCName);
+	 putty(Transfer_Job);
+	 String id=Traking_ID.replace("REQ", "");
+	 String file = String.format(Cost_Center_File,id);
+	File_Validation(Filedata,file);
+	
+
+	
+}
+
+public void Approve_Request() throws InterruptedException {
+	
+
+	driver.navigate().refresh();
+	driver.get(Admin_url);
+	Create_CC.Existing_CCR_Action();
+	//Create_CC.Request_Dropdown_Action("Create Cost Center");
+	Create_CC.Search_Button_Action();
+	Create_CC.Search_field_Action(Traking_ID);
+	String[] value=Create_CC.Cost_Center_Summary_Action();
+	
+	Assert.assertEquals(value[0], Traking_ID);
+	reportStep_only("Traking_ID "+Traking_ID+" is displayed in the Existing Cost Center Request","PASS");
+	Assert.assertEquals(value[3], "CreateCostCenter");
+	Assert.assertEquals(value[5], "SUBMITTED");
+	reportStep_only("Status SUBMITTED is displayed","PASS");
+	Create_CC.Approve_Action();
+
+	Create_CC.Approve_Button_Action();
+	//Create_CC.Success_message_Approve_Action();
+	Thread.sleep(5000);
+	
+	driver.navigate().refresh();
+	driver.get(Admin_url);
+	Create_CC.Existing_CCR_Action();
+	//Create_CC.Request_Dropdown_Action("Create Cost Center");
+	Create_CC.Completed_Action();
+	
+	Create_CC.Search_Button_Action();
+	Create_CC.Search_field_Action(Traking_ID);
+	String[] value1=Create_CC.Cost_Center_Summary_Action();
+	
+	Assert.assertEquals(value1[0], Traking_ID);
+	reportStep_only("Traking_ID "+Traking_ID+" is displayed in the Existing Cost Center Request","PASS");
+	Assert.assertEquals(value1[3], "CreateCostCenter");
+	Assert.assertEquals(value1[5], "APPROVED");
+	reportStep_only("Status APPROVED is displayed","PASS");
+	
+	
+}
+
+public void File_data_Parent(String Manger_ID,String Existing_Parent_CC,String Parent_CC,String Parent_CCName) {
+	
+	Filedata=new String[1];
+	String id=Traking_ID.replace("REQ", "");
+	SimpleDateFormat form = new SimpleDateFormat("dd-MMM-yyyy");	
+	String val="\""+id+"\",\"0\",\"ADDP\",\""+Parent_CC+"\",\""+Parent_CCName+"\",\""+form.format(new Date())+"\",\"\",\""+Existing_Parent_CC+"\",\""+Manger_ID+"\",\"\"";
+	System.out.println(val);
+	Filedata[0]=val;
+	
+}
+
+public void File_data_Child(String Manger_ID,String Existing_Parent_CC,String Cost_Center,String Cost_Center_Name,String Function_Code) {
+	
+	
+	String id=Traking_ID.replace("REQ", "");
+	SimpleDateFormat form = new SimpleDateFormat("dd-MMM-yyyy");
+	
+	String[] CC=Cost_Center.split(",");
+	String[] CC_Name=Cost_Center_Name.split(",");
+	String[] FC=Function_Code.split(",");
+	Filedata=new String[CC.length];
+	
+	
+	for(int i=0;i<CC.length;i++) {
+		
+		String val="\""+id+"\",\""+(i+1)+"\",\"ADDC\",\""+CC[i]+"\",\""+CC_Name[i]+"\",\""+form.format(new Date())+"\",\"\",\""+Existing_Parent_CC+"\",\""+Manger_ID+"\",\""+FC[i]+"\"";	
+		System.out.println(val);
+		Filedata[i]=val;
+	}
+	
+	
+	
+	
+}
+
+public void File_data_Parent_Child(String Manger_ID,String Existing_Parent_CC,String Parent_CC,String Parent_CCName,String Cost_Center,String Cost_Center_Name,String Function_Code) {
+	
+	
+	String id=Traking_ID.replace("REQ", "");
+	SimpleDateFormat form = new SimpleDateFormat("dd-MMM-yyyy");
+	
+		
+	String val="\""+id+"\",\"0\",\"ADDP\",\""+Parent_CC+"\",\""+Parent_CCName+"\",\""+form.format(new Date())+"\",\"\",\""+Existing_Parent_CC+"\",\""+Manger_ID+"\",\"\"";
+	System.out.println(val);
+	
+	String[] CC=Cost_Center.split(",");
+	String[] CC_Name=Cost_Center_Name.split(",");
+	String[] FC=Function_Code.split(",");
+	Filedata=new String[CC.length+1];
+	
+	Filedata[0]=val;
+	for(int i=0;i<CC.length;i++) {
+		
+		String val1="\""+id+"\",\""+(i+1)+"\",\"ADDC\",\""+CC[i]+"\",\""+CC_Name[i]+"\",\""+form.format(new Date())+"\",\"\",\""+Parent_CC+"\",\""+Manger_ID+"\",\""+FC[i]+"\"";	
+		
+		System.out.println(val1);
+		Filedata[i+1]=val1;
+	}
+	
+	
+	
+	
+}
+
+public void File_Validation(String[] Filedata,String Cost_Center_File) throws JSchException, IOException, InterruptedException {
+	
+	Thread.sleep(10000);
+	
+	String Values=putty(Cost_Center_File);
+	
+	System.out.print(Values);
+	
+	if(!(Strings.isNullOrEmpty(Values))) {
+	
+	for(int i=0;i<Filedata.length;i++) {
+		
+		if(Values.contains(Filedata[i])) {
+			
+			 reportStep_only(Filedata[i]+" record displayed successfully", "PASS");
+			 
+			 
+		 }
+		 else {
+			 reportStep_only(Filedata[i]+" record is NOT displayed ", "FAIL");
+		 }
+	}
+	
+	}
+	else {
+		
+		reportStep_only("No Record is displayed in the file", "FAIL");
+		
+	}
+	
+	
+}
+	
+	
+
+}
