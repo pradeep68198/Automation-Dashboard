@@ -1,0 +1,7 @@
+cd\
+pushd \\MIDP-SFS-010\checogdata\SIT Data\SIT-Informatics\006-General\Automation_Utilities\CVS_Finance_Script\CVS_Finance
+set path=C:\Program Files\Java\jdk18\bin;
+set classpath=\\MIDP-SFS-010\checogdata\SIT Data\SIT-Informatics\006-General\Automation_Utilities\CVS_JE_lib\*;
+javac XML_Generator_Suite.java
+java XML_Generator_Suite
+java -cp ".\bin;\\MIDP-SFS-010\checogdata\SIT Data\SIT-Informatics\006-General\Automation_Utilities\CVS_JE_lib\*;" org.testng.TestNG Testng.xml
