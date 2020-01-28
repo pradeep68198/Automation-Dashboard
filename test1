@@ -1,0 +1,75 @@
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
+import java.util.HashMap;
+import java.util.Map;
+
+public class Test123 {
+	
+	public static  HashMap<String, String> Result =new HashMap<String, String>();
+	public static  HashMap<String, String> Link =new HashMap<String, String>();
+
+	public static void main(String[] args) throws FileNotFoundException, UnsupportedEncodingException {
+		
+		String main="<html>\r\n" + 
+				"<head><title>Execution Summary</title></head>\r\n" + 
+				"<style type=\"text/css\">\r\n" + 
+				"  table td#fail  {background-color:red; color:white;}\r\n" + 
+				"  table td#pass  {background-color:green; color:white;}\r\n" + 
+				"  table, th, td {border: 1px solid black;border-collapse: collapse;}\r\n" + 
+				"  table tr#ROW3  {background-color:blue; color:white;}\r\n" + 
+				"  th, td {padding: 5px;text-align: center;} \r\n" + 
+				"</style>\r\n" + 
+				"<body><h1><center><b> Execution Summary </b></center></h1><hr>\r\n" + 
+				"<table style=\"width:100%\">\r\n" + 
+				"  <tr id=\"ROW3\">\r\n" + 
+				"    <th>Scenario Name</th>\r\n" + 
+				"    <th>Test Result</th>\r\n" + 
+				"    <th>Report Link</th>\r\n" + 
+				"  </tr>";
+		
+		String end="</table></body></html>";
+		String pass="<tr><td>%s</td><td id=\"pass\">%s</td><td><a href=\"%s\">Report Link</a></td></tr>";
+		String fail="<tr><td>%s</td><td id=\"fail\">%s</td><td><a href=\"%s\">Report Link</a></td></tr>";
+		
+		Result.put("Test1", "Pass");
+		Result.put("Test2", "Fail");
+		Result.put("Test3", "Pass");
+		
+		Link.put("Test1", "Index.html");
+		Link.put("Test2", "Index.html");
+		Link.put("Test3", "Index.html");
+		
+		PrintWriter writer = new PrintWriter("C:\\Users\\N278130\\Desktop\\JE_PDF_Validation\\Result.html", "UTF-8");
+	    writer.println(main);
+	    
+		
+		for(Map.Entry<String, String> entry :Result.entrySet()) {
+			
+			if(entry.getValue().equalsIgnoreCase("Pass")) {
+				
+				String text=String.format(pass,entry.getKey(),"Pass",Link.get(entry.getKey()));
+				writer.println(text);
+				
+				
+			}
+			
+              if(entry.getValue().equalsIgnoreCase("Fail")) {
+				
+				String text=String.format(fail,entry.getKey(),"Fail",Link.get(entry.getKey()));
+				writer.println(text);
+				
+				
+			}
+			
+			
+			
+		}
+		
+		writer.println(end);
+	    writer.close();
+				
+		
+	}
+
+}
