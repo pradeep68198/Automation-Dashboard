@@ -1,0 +1,722 @@
+package com.JE.Sprint1;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.sql.SQLException;
+import java.text.ParseException;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactoryConfigurationError;
+
+import org.apache.http.auth.AuthenticationException;
+import org.openqa.selenium.By;
+import org.testng.Assert;
+import org.xml.sax.SAXException;
+
+
+import com.JE.Func_Script.Rundate_Update_Ingest;
+import com.JE.Utilities.Base_Class;
+import com.jcraft.jsch.JSchException;
+
+public class Non_Sev_Legacy extends Base_Class{
+	
+	
+	String manager_url,manager_url1,Admin_url,Traking_ID,Emp_Name,Emp_Age,Aetna_ID,Admin_info_url,Manager_name,End_date,JEIR_Traking_ID,Letter_date,Start_date,Manager_ID,Dept_ID;
+	String Waiver_Due_Date,Final_Term_Date,Severance_Start_Date,Severance_End_Date;
+	String Employment_Termination_Date,Second_Salary_Contin_Start,Second_Salary_Contin_End ;
+	String Expec_End_Date,Expec_Waiver_Due_Date,Expec_Final_Term_Date,Expec_Severance_Start_Date,Expec_Severance_End_Date;
+	String Expec_Employment_Termination_Date,Expec_Second_Salary_Contin_Start,Expec_Second_Salary_Contin_End ;
+	String Actual_End_date,Actual_Start_date,Job_Title,Severence_week,Salary_less;
+	
+	
+	public By Error_message=By.xpath("//div[contains(text(),'You are not authorized to view this page')]");
+	
+	public Non_Sev_Legacy() throws FileNotFoundException, IOException
+	{
+		super();
+	}
+	
+	
+	public void Aetna_Legacy(String launch, String Doc_reviewed_by, String  Start_Date, String Letter_Date, String Employee_ID, String Override_Type,String Workflow) throws IOException, JSchException, InterruptedException, ParseException, AuthenticationException, ClassNotFoundException, SQLException, URISyntaxException, TransformerFactoryConfigurationError, TransformerException, ParserConfigurationException, SAXException {
+		
+		new Rundate_Update_Ingest().Rundate_Updater(null);
+		
+
+		String[] Result=Find_Manager(Employee_ID);
+		String Manger_ID=Result[0];
+		String Admin_ID=Result[1];
+		String Dept_ID=Result[3];
+		
+		
+		Start_date=Start_Date;
+		
+		 Salary_less=Find_Salary(Employee_ID);
+		
+		if(Override_Type.equalsIgnoreCase("Yes")) {
+			Aetna_Enhancement_date();
+		}
+		else {
+			Aetna_Legacy_date();
+		}
+		
+		if(launch.equalsIgnoreCase("Admin")) {
+			manager_url=JE_Page+Admin_ID;
+		}
+		else {
+		manager_url=JE_Page+Manger_ID;
+		manager_url1=JE_Page+Admin_ID;
+		
+		}
+		
+		Admin_url=JE_Information_Page+Admin_ID;
+		Admin_info_url=JE_Administration_Page+Admin_ID;
+		//Manager_ID=Manger_ID;
+		driver.get(manager_url);
+		scrolldown();
+		if(isElementPresent(Error_message)) {
+			driver.navigate().refresh();
+			driver.get(manager_url);
+		}
+		
+		JE_page.Create_New_JE_Action();
+		
+		if(launch.equalsIgnoreCase("Admin")) {
+			
+			JE_page.New_JE_Dept_owner_Action();
+			JE_page.New_JE_Dept_owner_search_Action(Manger_ID);
+			JE_page.New_JE_Dept_owner_select_Action();
+			
+		}
+		
+		JE_page.New_JE_Dept_dropdown_Action();
+		JE_page.New_JE_Dept_search_Action(Dept_ID);
+		JE_page.New_JE_Dept_select_Action();
+		JE_page.New_Docu_review_dropdown_Action();
+		JE_page.New_Docu_review_search_Action(Doc_reviewed_by);
+		JE_page.New_Docu_review_select_Action();
+		JE_page.New_Salary_Conti_Start_Action(Start_date);
+		
+		JE_page.New_Salary_Conti_end_click_Action();
+		End_date=JE_page.New_Salary_Conti_End_Action();
+		Assert.assertEquals(End_date, Expec_End_Date);
+		reportStep_only("End_date got matched in the JE Elimination page","PASS");
+		
+		JE_page.Contine_Button_Action();
+		Manager_name=create_JE.Dept_Manager_Name_Action();
+		Manager_ID=create_JE.Dept_Manager_ID_Action();
+		create_JE.Job_Elimination_Details_Action();
+		create_JE.Letter_date_Action(Letter_Date);
+		Letter_date=Letter_Date;
+		create_JE.Eliminated_Employee_Information_Action();
+		create_JE.JE_emp_dropdown_Action();
+		create_JE.JE_emp_search_Action(Employee_ID);
+		create_JE.JE_emp_select_Action();
+		
+		String[] Emp_detail=create_JE.JEIR_Status_Action();
+		Emp_Name=Emp_detail[0];
+		Aetna_ID=Emp_detail[1];
+		String JEIR_Status=Emp_detail[2];
+		Job_Title=Emp_detail[3];
+		
+		if(launch.equalsIgnoreCase("Admin")) {
+			
+			if(Override_Type.equalsIgnoreCase("Yes")) {
+				
+				create_JE.override_Action_Displayed();
+				create_JE.override_Action();
+				
+			}
+			
+		}
+		
+		
+		
+		create_JE.Job_Elimination_Procedure_Action();
+		create_JE.certifyAcknowledgement_Action();
+		create_JE.CertifyAcknowledgementForERC_Action();
+		
+		create_JE.Submit_Button_Action();
+		Traking_ID=create_JE.Success_message_Action();
+		
+        if(!(launch.equalsIgnoreCase("Admin"))) {
+			
+			if(Override_Type.equalsIgnoreCase("Yes")) {
+				
+				
+				override_click();
+			}
+			
+		}
+        JE_Submission_write(Aetna_ID);
+		
+		driver.navigate().refresh();
+		driver.get(manager_url);
+		if(isElementPresent(Error_message)) {
+			driver.navigate().refresh();
+			driver.get(manager_url);
+		}
+		
+        JE_page.Existing_JE_Action();
+		
+		exist_JE.Search_field_Action(Traking_ID);
+		
+		String[] value=exist_JE.Job_Elimination_Summary_Action();
+		
+		Assert.assertEquals(value[0], Traking_ID);
+		
+		reportStep_only("Traking_ID "+Traking_ID+" is displayed in the Existing Job Elimination Page","PASS");
+		
+       
+			Assert.assertEquals(value[7],"APPROVED");
+			reportStep_only("Status APPROVED is displayed","PASS");
+		
+     
+        
+        putty(Transfer_Job);
+       
+        
+        if(Override_Type.equalsIgnoreCase("Yes")) {
+        	Aetna_JEIR_Admin_Enhancement();
+        	
+		}
+		else {
+			Aetna_JEIR_Admin_Legacy();
+			
+		}
+        
+        
+		
+			
+			if(Override_Type.equalsIgnoreCase("Yes")) {
+	        	
+	        	Aetna_Enhancement_pdf();
+			}
+			else {
+				
+				Aetna_Legacy_pdf();
+			}
+			
+		
+		
+			if(Workflow.equalsIgnoreCase("Yes")) {
+				
+				if(Override_Type.equalsIgnoreCase("Yes")) {
+					
+					new Work_Flow_Script().Enhancement_Non_Sev_Workflow(Admin_info_url,Aetna_ID,Start_date,Final_Term_Date,End_date,Severance_Start_Date,Severance_End_Date);
+				}
+				else {
+					
+					new Work_Flow_Script().Legacy_Non_Sev_Workflow(Admin_info_url,Aetna_ID,Start_date,Final_Term_Date,End_date);
+				}
+				
+				
+			}
+		
+		
+		
+	}
+	
+	
+	
+	public void Aetna_Enhancement_date() throws ParseException, IOException {
+		
+
+		
+		Expec_End_Date=Calender_Calculation(Start_date,62);
+		Expec_Employment_Termination_Date=Calender_Calculation(Expec_End_Date,1);
+		Expec_Second_Salary_Contin_Start=Expec_Employment_Termination_Date;
+		Expec_Second_Salary_Contin_End=Calender_Calculation(Expec_Second_Salary_Contin_Start,62);
+		
+		Expec_Final_Term_Date=Calender_Calculation(Expec_Second_Salary_Contin_End,1);
+		
+		
+		
+		
+		
+	
+	}
+
+	public void Aetna_Legacy_date() throws ParseException, IOException {
+		
+		
+		Expec_End_Date=Calender_Calculation(Start_date,62);
+		Expec_Employment_Termination_Date=Calender_Calculation(Expec_End_Date,1);
+		Expec_Final_Term_Date=Calender_Calculation(Expec_End_Date,1);
+		
+		
+		
+		
+	}
+	
+public void Aetna_JEIR_Admin_Enhancement() throws IOException, InterruptedException, ParseException {
+		
+		
+		driver.navigate().refresh();
+		driver.get(Admin_info_url);
+		if(isElementPresent(Error_message)) {
+			driver.navigate().refresh();
+			driver.get(Admin_info_url);
+		}
+		JE_Admin.Emp_id_Action(Aetna_ID);
+		JE_Admin.Search_Button_Action();
+		String[] Value=JE_Admin.JE_Admin_Summary_Action();
+		
+		Assert.assertEquals(Value[5],"Aetna Enhanced Severance");
+		reportStep_only("Aetna Enhanced Severance matched","PASS");
+		
+		JE_Admin.Button_Edit_Action();
+		JE_Admin.Popup_display_Action();
+		
+		String Act_Emp_name=JE_Admin.Emp_Name_Action();
+		String Act_Manager_name=JE_Admin.Manager_Name_Action();
+		String Act_Emp_id=JE_Admin.Emp_ID_Action();
+		String Act_Manager_id=JE_Admin.Manager_ID_Action();
+		
+	
+		
+		Final_Term_Date=JE_Admin.Final_Term_Date_Action();
+		JE_Admin.Job_Elimination_Details_Action();
+		JE_Admin.Aetna_Specific_Details_Action();
+	    Severance_Start_Date=JE_Admin.Enhanced_Start_date_Action();
+		Severance_End_Date=JE_Admin.Enhanced_End_date_Action();
+		Actual_Start_date=JE_Admin.Start_date_Action();
+		Actual_End_date=JE_Admin.End_date_Action();
+		
+
+		Employment_Termination_Date=Calender_Calculation(Actual_End_date,1);
+		
+		
+		reportStep_only("Expected Final_Term_Date - "+Expec_Final_Term_Date+"Actual Final_Term_Date -  "+Final_Term_Date, "INFO");
+		reportStep_only("Expected Employment_Termination_Date - "+Expec_Employment_Termination_Date+"Actual Employment_Termination_Date -  "+Employment_Termination_Date, "INFO");
+		reportStep_only("Expected Second_Salary_Contin_Start - "+Expec_Second_Salary_Contin_Start+"Actual Second_Salary_Contin_Start -  "+Severance_Start_Date, "INFO");
+		reportStep_only("Expected Second_Salary_Contin_End - "+Expec_Second_Salary_Contin_End+"Actual Second_Salary_Contin_End -  "+Severance_End_Date, "INFO");
+		reportStep_only("Expected Start_date - "+Start_date+"Actual Start_date -  "+Actual_Start_date, "INFO");
+		reportStep_only("Expected End_date - "+Expec_End_Date+"Actual End_date -  "+Actual_End_date, "INFO");
+		
+		
+		
+		if(Final_Term_Date.equalsIgnoreCase(Expec_Final_Term_Date)) {
+			reportStep_only("Final_Term_Date Matched", "PASS");
+		}
+		else {
+			
+			reportStep_only("Final_Term_Date NOT Matched", "FAIL");
+		}
+		
+		
+		
+		if(Employment_Termination_Date.equalsIgnoreCase(Expec_Employment_Termination_Date)) {
+			reportStep_only("Employment_Termination_Date Matched", "PASS");
+		}
+		else {
+			
+			reportStep_only("Employment_Termination_Date NOT Matched", "FAIL");
+		}
+		
+		if(Severance_Start_Date.equalsIgnoreCase(Expec_Second_Salary_Contin_Start)) {
+			reportStep_only("Second_Salary_Contin_Start Matched", "PASS");
+		}
+		else {
+			
+			reportStep_only("Second_Salary_Contin_Start NOT Matched", "FAIL");
+		}
+		
+		if(Severance_End_Date.equalsIgnoreCase(Expec_Second_Salary_Contin_End)) {
+			reportStep_only("Second_Salary_Contin_End Matched", "PASS");
+		}
+		else {
+			
+			reportStep_only("Second_Salary_Contin_End NOT Matched", "FAIL");
+		}
+		
+		if(Actual_Start_date.equalsIgnoreCase(Start_date)) {
+			reportStep_only("Actual_Start_date Matched", "PASS");
+		}
+		else {
+			
+			reportStep_only("Actual_Start_date NOT Matched", "FAIL");
+		}
+		
+		if(Actual_End_date.equalsIgnoreCase(Expec_End_Date)) {
+			reportStep_only("End_date Matched", "PASS");
+		}
+		else {
+			
+			reportStep_only("End_date NOT Matched", "FAIL");
+		}
+		
+		if(Act_Emp_name.equalsIgnoreCase(Emp_Name)) {
+			reportStep_only("Emp_Name Matched", "PASS");
+		}
+		else {
+			
+			reportStep_only("Emp_Name NOT Matched", "FAIL");
+		}
+		
+		if(Act_Manager_name.equalsIgnoreCase(Manager_name)) {
+			reportStep_only("Manager_name Matched", "PASS");
+		}
+		else {
+			
+			reportStep_only("Manager_name NOT Matched", "FAIL");
+		}
+		
+		if(Act_Emp_id.equalsIgnoreCase(Aetna_ID)) {
+			reportStep_only("Aetna_ID Matched", "PASS");
+		}
+		else {
+			
+			reportStep_only("Aetna_ID NOT Matched", "FAIL");
+		}
+		
+		if(Act_Manager_id.equalsIgnoreCase(Manager_ID)) {
+			reportStep_only("Manager_ID Matched", "PASS");
+		}
+		else {
+			
+			reportStep_only("Manager_ID NOT Matched", "FAIL");
+		}
+		
+		
+		
+
+		
+		
+	
+		
+		
+	}
+	
+	
+public void Aetna_JEIR_Admin_Legacy() throws IOException, InterruptedException, ParseException {
+		
+	
+		driver.navigate().refresh();
+		driver.get(Admin_info_url);
+		if(isElementPresent(Error_message)) {
+			driver.navigate().refresh();
+			driver.get(Admin_info_url);
+		}
+		JE_Admin.Emp_id_Action(Aetna_ID);
+		JE_Admin.Search_Button_Action();
+		String[] Value=JE_Admin.JE_Admin_Summary_Action();
+		
+		Assert.assertEquals(Value[5],"Aetna Legacy");
+		reportStep_only("Aetna Legacy matched","PASS");
+		
+		JE_Admin.Button_Edit_Action();
+		JE_Admin.Popup_display_Action();
+		
+		String Act_Emp_name=JE_Admin.Emp_Name_Action();
+		String Act_Manager_name=JE_Admin.Manager_Name_Action();
+		String Act_Emp_id=JE_Admin.Emp_ID_Action();
+		String Act_Manager_id=JE_Admin.Manager_ID_Action();
+		
+		
+		//Waiver_Due_Date=JE_Admin.Waiver_Due_Date_Action();
+		Final_Term_Date=JE_Admin.Final_Term_Date_Action();
+		JE_Admin.Job_Elimination_Details_Action();
+		JE_Admin.Aetna_Specific_Details_Action();
+		//Severance_Start_Date=JE_Admin.Severance_Start_Date_Action();
+		//Severance_End_Date=JE_Admin.Severance_End_Date_Action();
+		Actual_Start_date=JE_Admin.Start_date_Action();
+		Actual_End_date=JE_Admin.End_date_Action();
+		
+		
+		
+		Employment_Termination_Date=Calender_Calculation(Actual_End_date,1);
+		
+
+		reportStep_only("Expected Final_Term_Date - "+Expec_Final_Term_Date+"Actual Final_Term_Date -  "+Final_Term_Date, "INFO");
+		reportStep_only("Expected Employment_Termination_Date - "+Expec_Employment_Termination_Date+"Actual Employment_Termination_Date -  "+Employment_Termination_Date, "INFO");
+		reportStep_only("Expected Start_date - "+Start_date+"Actual Start_date -  "+Actual_Start_date, "INFO");
+		reportStep_only("Expected End_date - "+Expec_End_Date+"Actual End_date -  "+Actual_End_date, "INFO");
+		
+	
+		
+		if(Final_Term_Date.equalsIgnoreCase(Expec_Final_Term_Date)) {
+			reportStep_only("Final_Term_Date Matched", "PASS");
+		}
+		else {
+			
+			reportStep_only("Final_Term_Date NOT Matched", "FAIL");
+		}
+		
+		
+		
+		if(Employment_Termination_Date.equalsIgnoreCase(Expec_Employment_Termination_Date)) {
+			reportStep_only("Employment_Termination_Date Matched", "PASS");
+		}
+		else {
+			
+			reportStep_only("Employment_Termination_Date NOT Matched", "FAIL");
+		}
+		
+		if(Actual_Start_date.equalsIgnoreCase(Start_date)) {
+			reportStep_only("Actual_Start_date Matched", "PASS");
+		}
+		else {
+			
+			reportStep_only("Actual_Start_date NOT Matched", "FAIL");
+		}
+		
+		if(Actual_End_date.equalsIgnoreCase(Expec_End_Date)) {
+			reportStep_only("End_date Matched", "PASS");
+		}
+		else {
+			
+			reportStep_only("End_date NOT Matched", "FAIL");
+		}
+		
+		if(Act_Emp_name.equalsIgnoreCase(Emp_Name)) {
+			reportStep_only("Emp_Name Matched", "PASS");
+		}
+		else {
+			
+			reportStep_only("Emp_Name NOT Matched", "FAIL");
+		}
+		
+		if(Act_Manager_name.equalsIgnoreCase(Manager_name)) {
+			reportStep_only("Manager_name Matched", "PASS");
+		}
+		else {
+			
+			reportStep_only("Manager_name NOT Matched", "FAIL");
+		}
+		
+		if(Act_Emp_id.equalsIgnoreCase(Aetna_ID)) {
+			reportStep_only("Aetna_ID Matched", "PASS");
+		}
+		else {
+			
+			reportStep_only("Aetna_ID NOT Matched", "FAIL");
+		}
+		
+		if(Act_Manager_id.equalsIgnoreCase(Manager_ID)) {
+			reportStep_only("Manager_ID Matched", "PASS");
+		}
+		else {
+			
+			reportStep_only("Manager_ID NOT Matched", "FAIL");
+		}
+		
+		
+	}
+
+public void Aetna_Enhancement_pdf() throws IOException, InterruptedException {
+	
+	String[][] page_content=readXLSX(PDF_Content,"Non-Severance-Enhance");
+	PDF_ID=Aetna_ID;
+	String Desc;
+	String Final_Desc;
+	driver.navigate().refresh();
+	driver.get(manager_url);
+	if(isElementPresent(Error_message)) {
+		driver.navigate().refresh();
+		driver.get(manager_url);
+	}
+    JE_page.Existing_JE_Action();
+	exist_JE.Search_field_Action(Traking_ID);
+	exist_JE.Job_Elimination_Edit_Action();
+	Thread.sleep(3000);
+	exist_JE.Eliminated_Employee_information_Action();
+	String PDF_path=exist_JE.PDF_icon_Action(Traking_ID);
+	 
+	Desc=Finder(page_content,"1");
+	Final_Desc = String.format(Desc, Emp_Name,Aetna_ID,Manager_name,Letter_date,Start_date);
+	PDF_Reader(PDF_path,Final_Desc,1);
+	
+	Desc=null;
+	Final_Desc=null;
+	
+	if(Salary_less.equalsIgnoreCase("Yes")) {
+		
+		Desc=Finder(page_content,"2a");
+		
+		Final_Desc = String.format(Desc, Emp_Name,Letter_date,Start_date,Expec_End_Date,Expec_Employment_Termination_Date,Expec_Second_Salary_Contin_Start,Expec_Second_Salary_Contin_End,"100%");
+		PDF_Reader(PDF_path,Final_Desc,2);
+		Desc=null;
+		Final_Desc=null;
+		
+	}
+	else {
+	Desc=Finder(page_content,"2");
+	
+	Final_Desc = String.format(Desc, Emp_Name,Letter_date,Start_date,Expec_End_Date,Expec_Employment_Termination_Date,Expec_Second_Salary_Contin_Start,Expec_Second_Salary_Contin_End,"100%");
+	PDF_Reader(PDF_path,Final_Desc,2);
+	Desc=null;
+	Final_Desc=null;
+	}
+	
+    Desc=Finder(page_content,"3");
+	Final_Desc = String.format(Desc, Emp_Name,Letter_date);
+	PDF_Reader(PDF_path,Final_Desc,3);
+	Desc=null;
+	Final_Desc=null;
+	
+	/*   
+	
+	if(pdf_status) {
+		reportStep_only("PDF content Mismatch", "FAIL");
+		pdf_status=false;
+		Assert.assertTrue(false);
+	}
+	
+	*/
+}
+
+public void Aetna_Legacy_pdf() throws IOException, InterruptedException {
+	
+	String[][] page_content=readXLSX(PDF_Content,"Non-Severance-Legacy");
+	PDF_ID=Aetna_ID;
+	String Desc;
+	String Final_Desc;
+	driver.navigate().refresh();
+	driver.get(manager_url);
+	if(isElementPresent(Error_message)) {
+		driver.navigate().refresh();
+		driver.get(manager_url);
+	}
+    JE_page.Existing_JE_Action();
+	exist_JE.Search_field_Action(Traking_ID);
+	exist_JE.Job_Elimination_Edit_Action();
+	Thread.sleep(3000);
+	exist_JE.Eliminated_Employee_information_Action();
+	String PDF_path=exist_JE.PDF_icon_Action(Traking_ID);
+	 
+	Desc=Finder(page_content,"1");
+	Final_Desc = String.format(Desc, Emp_Name,Aetna_ID,Manager_name,Letter_date,Start_date);
+	PDF_Reader(PDF_path,Final_Desc,1);
+	
+	if(Salary_less.equalsIgnoreCase("Yes")) {
+		Desc=Finder(page_content,"2a");
+		Final_Desc = String.format(Desc, Emp_Name,Letter_date,Start_date,Expec_End_Date,Expec_Employment_Termination_Date,"100%");
+		PDF_Reader(PDF_path,Final_Desc,2);
+	}
+	else {
+	Desc=Finder(page_content,"2");
+	Final_Desc = String.format(Desc, Emp_Name,Letter_date,Start_date,Expec_End_Date,Expec_Employment_Termination_Date,"100%");
+	PDF_Reader(PDF_path,Final_Desc,2);
+	}
+	
+	Desc=Finder(page_content,"3");
+	Final_Desc = String.format(Desc, Emp_Name,Letter_date);
+	PDF_Reader(PDF_path,Final_Desc,3);
+	/*
+	
+	if(pdf_status) {
+		reportStep_only("PDF content Mismatch", "FAIL");
+		pdf_status=false;
+		Assert.assertEquals("1","2");
+	}
+	
+	*/
+}
+
+
+
+public void override_click() throws IOException, InterruptedException {
+	
+	
+	driver.navigate().refresh();
+	driver.get(manager_url1);
+	if(isElementPresent(Error_message)) {
+		driver.navigate().refresh();
+		driver.get(manager_url);
+	}
+    JE_page.Existing_JE_Action();
+	exist_JE.Search_field_Action(Traking_ID);
+	exist_JE.Job_Elimination_Edit_Action();
+	Thread.sleep(3000);
+	exist_JE.Eliminated_Employee_information_Action();
+	exist_JE.override_Action_Displayed();
+	exist_JE.override_icon_action();
+	
+}
+
+public void make_reset() {
+	
+	manager_url=null;
+	manager_url1=null;
+	Admin_url=null;
+	Traking_ID=null;
+	Emp_Name=null;
+	Emp_Age=null;
+	Aetna_ID=null;
+	Admin_info_url=null;
+	Manager_name=null;
+	End_date=null;
+	JEIR_Traking_ID=null;
+	Letter_date=null;
+	Start_date=null;
+	Manager_ID=null;
+	Dept_ID=null;
+	Waiver_Due_Date=null;
+	Final_Term_Date=null;
+	Severance_Start_Date=null;
+	Severance_End_Date=null;
+	Employment_Termination_Date=null;
+	Second_Salary_Contin_Start=null;
+	Second_Salary_Contin_End =null;
+	Expec_End_Date=null;
+	Expec_Waiver_Due_Date=null;
+	Expec_Final_Term_Date=null;
+	Expec_Severance_Start_Date=null;
+	Expec_Severance_End_Date=null;
+	Expec_Employment_Termination_Date=null;
+	Expec_Second_Salary_Contin_Start=null;
+	Expec_Second_Salary_Contin_End=null;
+	Actual_End_date=null;
+	Actual_Start_date=null;
+	Job_Title=null;
+	Salary_less=null;
+
+	
+}
+
+
+public String Find_Salary(String emp) throws IOException {
+	
+	String[][] data=readXLSX(Rules_Book,"Emp_Details");
+	
+	
+     String Salary_Type = null;
+    
+	
+	for(int i=1;i<data[0].length;i++){
+	
+	 if(data[0][i].equalsIgnoreCase(emp)){
+		  
+		
+		 Salary_Type=data[4][i];
+			 break;
+			 	 
+	 }	 
+	 
+	}
+	
+	
+	
+	return Salary_Type;
+	
+	
+	
+	
+}
+
+
+
+
+
+
+
+
+
+		
+
+	
+
+}
+
