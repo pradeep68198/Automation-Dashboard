@@ -1,0 +1,1039 @@
+package com.JE.Utilities;
+
+import java.awt.AWTException;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintWriter;
+import java.sql.SQLException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+
+import org.openqa.selenium.JavascriptExecutor;
+
+
+import org.apache.commons.io.FileUtils;
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+import org.apache.poi.ss.usermodel.DataFormatter;
+import org.apache.poi.util.Units;
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.apache.poi.xwpf.usermodel.XWPFParagraph;
+import org.apache.poi.xwpf.usermodel.XWPFRun;
+import org.openqa.selenium.Alert;
+import org.openqa.selenium.By;
+import org.openqa.selenium.Keys;
+import org.openqa.selenium.NoAlertPresentException;
+import org.openqa.selenium.NoSuchElementException;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebDriverException;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
+
+import org.openqa.selenium.interactions.Action;
+import org.openqa.selenium.interactions.Actions;
+
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.Select;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import org.testng.ITestResult;
+import org.openqa.selenium.TimeoutException;
+
+
+import com.itextpdf.text.pdf.PdfReader;
+import com.itextpdf.text.pdf.parser.PdfTextExtractor;
+import com.jcraft.jsch.Channel;
+import com.jcraft.jsch.ChannelExec;
+import com.jcraft.jsch.ChannelSftp;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.Session;
+import com.jcraft.jsch.SftpException;
+import com.relevantcodes.extentreports.ExtentReports;
+import com.relevantcodes.extentreports.ExtentTest;
+import com.relevantcodes.extentreports.LogStatus;
+
+
+public class General_Wrapper {
+	
+	//public static RemoteWebDriver driver;
+	public static WebDriver driver;
+	public static ExtentTest test;
+	public ExtentReports extent;
+	public static String testCaseName;
+	public static String Excel_sheet;
+	public static String testDescription;
+	public static String category;
+	public static String authors;
+	public static String URL;
+	public static String Img_Path;
+	public static String Result_Path;
+	public static String Doc_Path,Selection_Tool;
+	public static String Download_Path,JE_Page,JE_Information_Page,JE_Administration_Page,Candidate_Page,Rules_Book,Functional_Elimination_Page,Candidate_Compare_Page,Candidate_Employee_Request_Page,Pending_Job_Elimination_Page;
+	public static String Result="";
+	public static String Report_Path,ML_Username,ML_Pwd,Transfer_Job,Write_Status_Job,Write_Status_File,ML_URL,ML_Query,Notice_JE_Page;
+	public static String Data_Sheet,PDF_Content,New_Report,Chrome_Driver;
+	public static ITestResult result;
+	public static SimpleDateFormat formatter1;
+	public static ArrayList<String> screenshots=new ArrayList<String>();
+	public static ArrayList<String> screenshots1=new ArrayList<String>();
+	public static List<String> filesListInDir = new ArrayList<String>();
+	
+	public static boolean pdf_status=false;
+	
+	public static  HashMap<String, String> Candidate_Emp_Name =new HashMap<String, String>();
+	public static  HashMap<String, String> Candidate_Job_Title =new HashMap<String, String>();
+	public static  HashMap<String, String> Candidate_Eligible_Plan =new HashMap<String, String>();
+	public static  HashMap<String, String> Candidate_Ranking =new HashMap<String, String>();
+	public static  HashMap<String, String> Candidate_Decision =new HashMap<String, String>();
+	public static  HashMap<String, String> Candidate_Type =new HashMap<String, String>();
+	public static  HashMap<String, String> Candidate_JE_Status =new HashMap<String, String>();
+	public static  HashMap<String, String> Candidate_JE_List =new HashMap<String, String>();
+	public static  HashMap<String, String> Candidate_Age =new HashMap<String, String>();
+	public static  HashSet<String> Candidate_ID =new HashSet<String>();
+	
+	public static  HashMap<String, String> Sev_list_all =new HashMap<String, String>();
+	public static  HashMap<String, String> Non_Sev_list_all =new HashMap<String, String>();
+	public static  HashMap<String, String> Rem_list_all =new HashMap<String, String>();
+	
+	public static  HashMap<String, String> JE_Emp_Name =new HashMap<String, String>();
+	public static  HashMap<String, String> JE_Job_Title =new HashMap<String, String>();
+	public static  HashMap<String, String> JE_Eligible_Plan =new HashMap<String, String>();
+	public static  HashMap<String, String> JE_Salary_less =new HashMap<String, String>();
+	public static  HashMap<String, Integer> JE_Severance_Week =new HashMap<String, Integer>();
+	public static  HashMap<String, String> JE_Type =new HashMap<String, String>();
+	public static  HashMap<String, String> JE_JEIR_Status =new HashMap<String, String>();
+	public static  HashMap<String, String> JE_Age =new HashMap<String, String>();
+    
+	public static String PDF_ID;
+	
+	public void waitForElement(By by,String Desc) {
+		
+		try {
+	        WebDriverWait wait = new WebDriverWait(driver, 15);
+	        wait.until(ExpectedConditions.visibilityOfElementLocated(by));
+	        reportStep("The element  "+Desc+" is displayed in the page", "PASS");
+	        
+	        }
+	catch (TimeoutException e) {
+		
+		reportStep("The element "+Desc+" is not displayed in the page", "FAIL");
+	}
+	    
+	}
+	
+     public void waitForElement1(By by,String Desc) {
+		
+		try {
+	        WebDriverWait wait = new WebDriverWait(driver, 120);
+	        wait.until(ExpectedConditions.visibilityOfElementLocated(by));
+	        reportStep("The element  "+Desc+" is displayed in the page", "PASS");
+	        
+	        }
+	catch (TimeoutException e) {
+		
+		reportStep("The element "+Desc+" is not displayed in the page", "FAIL");
+	}
+	    
+	}
+	
+       public static boolean isElementPresent(By by) throws InterruptedException {
+		
+		try {
+			  Thread.sleep(4000);
+		        driver.findElement(by);
+		      return true;
+		     } catch (NoSuchElementException e) {
+		         return false;
+		    }
+		}
+       
+       public boolean Mouseover(By by){
+    	try{   
+    	WebElement ele=driver.findElement(by);   
+   		Actions build=new Actions(driver);
+   		Action move=build.moveToElement(ele).build();
+   		move.perform();
+   		return true;
+   		
+    	}
+    	catch(Exception e){
+    		return false;
+    	}
+   		
+   	}
+       
+       public WebDriver Switchto(WebDriver driver){
+   		
+   		for(String temp :driver.getWindowHandles()){
+   			driver.switchTo().window(temp);
+   		}
+   		
+   		 return driver;
+
+   	
+   	}
+       
+       public static boolean isClickable(By by)      
+       {
+           try
+           {
+        	   WebDriverWait wait = new WebDriverWait(driver, 5);
+   	        wait.until(ExpectedConditions.elementToBeClickable(by));
+               return true;
+           }
+           catch (Exception e)
+           {
+               return false;
+           }
+       }
+       
+       public boolean selectVisibileText(By by, String value) {
+   		try{
+   			new Select(driver.findElement(by)).selectByVisibleText(value);
+   			reportStep("The element with id: "+by+" is selected with value :"+value, "PASS");
+   			return true;
+   		} catch (Exception e) {
+   			return false;
+   			
+   		}
+   	}
+       
+       public boolean selectBy_Value(By by, String value) {
+      		try{
+      			System.out.println("Came Inside 0");
+      			new Select(driver.findElement(by)).selectByValue(value);
+      			System.out.println("Came Inside");
+      			reportStep("The element with id: "+by+" is selected with value :"+value, "PASS");
+      			return true;
+      		} catch (Exception e) {
+      			return false;
+      			
+      		}
+      	}
+       
+       public void acceptAlert() {
+   		try {
+   			
+   			int customwait=0;
+   			while (isAlertPresent()==false && customwait!=30){
+   				Thread.sleep(1000);
+   				customwait=customwait+1;
+   			}
+   			reportStep("Alert box is Displayed", "INFO");
+   			driver.switchTo().alert().accept();
+   			reportStep("Alert box is clicked", "INFO");
+   			
+   		
+   		} catch (NoAlertPresentException e) {
+   			System.out.println("alert is not clicked");
+   		} catch (Exception e) {
+   			System.out.println("alert is not clicked");
+   		}
+
+   	}
+       
+       public static boolean isAlertPresent1(){
+   	    try{
+   	        driver.manage().timeouts().implicitlyWait(0, TimeUnit.SECONDS);
+   	        Alert a=driver.switchTo().alert();
+   	        a.accept();
+   	        return true;
+   	    }
+   	    catch (NoAlertPresentException e) {
+   	    	
+   	        return false;
+   	    }
+   	   
+   	   
+   	}
+       
+       public boolean isAlertPresent(){
+   	    try{
+   	        driver.manage().timeouts().implicitlyWait(0, TimeUnit.SECONDS);
+   	        driver.switchTo().alert();
+   	        return true;
+   	    }
+   	    catch (NoAlertPresentException e) {
+   	    	
+   	        return false;
+   	    }
+   	   
+   	   
+   	}
+       
+       public boolean verifyTitle(String title) {
+    	
+   		boolean bReturn = false;
+   		try{
+   			if (driver.getTitle().equalsIgnoreCase(title)){
+   				reportStep("The title of the page matches with the value :"+title, "PASS");
+   				bReturn = true;
+   			}else{
+   				reportStep("The title of the page:"+driver.getTitle()+" did not match with the value :"+title, "SUCCESS");
+
+   		}}catch (Exception e) {
+   			
+   			reportStep("Unknown exception occured while verifying the title", "FAIL");
+   		}
+   		return bReturn;
+   	}
+       
+       public void Browser_get(String Website) {
+    	   
+    	   driver.get(Website);
+       }
+       
+       
+       public void Browser_Setup(String browser) throws InterruptedException, AWTException, IOException {
+    	   
+   		if(browser.equalsIgnoreCase("Chrome")){
+   		
+   			System.setProperty("webdriver.chrome.driver", Chrome_Driver); 
+   			
+   			HashMap<String,Object> chromePrefs=new HashMap<String,Object>();
+   			
+   			chromePrefs.put("profile.default_content_setting.popups", 0);
+   			
+   			chromePrefs.put("download.default_directory", Download_Path);
+   			
+   			ChromeOptions options = new ChromeOptions();
+   			
+   			options.addArguments("disable-infobars");
+   			
+   			options.setExperimentalOption("useAutomationExtension", false);
+   		
+   		    options.setExperimentalOption("excludeSwitches", Collections.singletonList("enable-automation"));
+   		
+   			options.setExperimentalOption("prefs", chromePrefs);
+   			//options.addArguments("--headless");
+   			
+   			driver=new ChromeDriver(options);
+   		    driver.manage().window().maximize();
+   			
+   			
+   			
+   			
+   			// driver.get(Website);
+   			 
+   		}
+   			
+   		
+   	}
+       
+       public void enterText(By by, String data,String Desc) {
+    	   
+   		try {
+   			waitForElement(by,Desc);
+   			driver.findElement(by).clear();
+   			driver.findElement(by).sendKeys(data);
+   			
+   			reportStep("The data: "+data+" entered successfully in field :"+Desc, "PASS");
+   			Result=Result.concat(" . The data: "+data+" entered successfully in field :"+Desc+" \n");
+   		} catch (NoSuchElementException e) {
+   			reportStep("The data: "+data+" could not be entered in the field :"+Desc, "FAIL");
+   			Result=Result.concat(" . The data: "+data+" could not be entered in the field :"+Desc+" \n");
+   		} catch (Exception e) {
+   			reportStep("Unknown exception occured while entering "+data+" in the field :"+Desc, "FAIL");
+   		}
+   	}
+       public void enterKey(By by,String Desc) {
+    	   
+   		try {
+   			waitForElement(by,Desc);
+   			driver.findElement(by).sendKeys(Keys.ENTER);	
+   			reportStep("The Enter Key pressed successfully in field :"+Desc, "PASS");
+   		} catch (NoSuchElementException e) {
+   			reportStep("The Enter Key is not pressed successfully in field :"+Desc, "FAIL");
+   		} catch (Exception e) {
+   			reportStep("Unknown exception occured while entering key in the field :"+Desc, "FAIL");
+   		}
+   	}
+       
+       public String Get_Title() {
+    	   
+      			String title=driver.getTitle();
+      			
+      		return title;
+      	}
+       
+       public List<WebElement> List_Element(By by) {
+    	   
+ 			List<WebElement> name=driver.findElements(by);
+ 			
+ 		return name;
+ 	}
+       
+       
+       public void Click(By by,String Desc){
+    	   
+      		try {
+      			
+      			waitForElement(by,Desc);
+      			
+      			driver.findElement(by).click();	
+      			
+      			reportStep("The Property : "+Desc+" Clicked successfully ", "PASS");
+      			Result=Result.concat(" . The Property : "+Desc+" Clicked successfully \n");
+      		} catch (NoSuchElementException e) {
+      			reportStep("The Property : "+Desc+" not Clicked successfully ", "FAIL");
+      			Result=Result.concat(" . The Property : "+Desc+" not Clicked \n");
+      		} catch (Exception e) {
+      			reportStep("Unknown exception occured while clicking "+Desc, "FAIL");
+      		}
+      	}
+       
+       public String Get_Text(By by,String desc){
+    	   String text = null;
+    	   
+     		try {
+     			waitForElement(by,desc);
+     			text=driver.findElement(by).getText();	
+     			reportStep("The text : "+text+" retrived successfully ", "PASS");
+     			Result=Result.concat(" . The text : "+text+" retrived successfully  \n");
+     		} catch (NoSuchElementException e) {
+     			reportStep("The text element : "+desc+" not Found ", "FAIL");
+     			Result=Result.concat(" . The text element : "+desc+" not Found   \n");
+     		} catch (Exception e) {
+     			reportStep("Unknown exception occured while clicking "+desc, "FAIL");
+     		}
+     		return text;
+     	}
+       
+	public void reportStep(String desc, String status) {
+		
+		long snapNumber = 0;
+		String imageid=null;
+		try{
+			
+		    snapNumber=Screenshot();
+		    imageid=Img_Path+snapNumber+".jpg";
+		    screenshots1.add(desc);
+			screenshots.add(imageid);
+		}
+		catch(Exception e){
+			
+		}
+		
+		
+		
+	
+			// Write if it is successful or failure or information
+			if(status.toUpperCase().equals("PASS")){
+				 
+				test.log(LogStatus.PASS, desc);
+			}else if(status.toUpperCase().equals("FAIL")){
+				test.log(LogStatus.FAIL, desc+"  "+test.addScreenCapture(Img_Path+snapNumber+".jpg"));
+				
+			}else if(status.toUpperCase().equals("INFO")){
+				test.log(LogStatus.INFO, desc);
+			}
+		
+		
+		
+	}
+	
+  
+	
+	public ExtentReports startResult(){
+		try{
+			SimpleDateFormat sdf = new SimpleDateFormat("ddMMyyyy_hh_mm_ss");
+			String PP = "Result_"+sdf.format(new Date())+".html";  
+			System.out.println(Report_Path);
+			extent = new ExtentReports(Report_Path+PP, true);
+			extent.loadConfig(new File("extent-config.xml"));
+		}catch(Exception e){
+			System.out.println("exception throwed in startResult method");
+		}
+		
+		return extent;
+		
+	}
+
+	public ExtentTest startTestCase(String testCaseName, String testDescription){
+		try{
+			test = extent.startTest(testCaseName, testDescription);
+		}catch(Exception e){
+			System.out.println("Exception throwd in startTestCase method");
+		}
+		return test;
+	}
+
+	public void endResult(){
+		try{
+			extent.flush();
+			System.out.println("result has been saved");
+		}
+		catch(Exception e){
+			System.out.println("Exception throwed while endResult method");
+		}
+		
+	}
+
+	public void endTestcase(){
+		try{
+			
+			createDoc(testCaseName, screenshots);
+			
+			extent.endTest(test);
+			
+			screenshots.clear();
+			screenshots1.clear();
+			
+			
+		}catch(Exception e){
+			System.out.println("Exception throwed while endTestcae method");
+		}
+		
+	}
+	
+      public long Screenshot()throws IOException, InvalidFormatException{
+		
+    	 long number = (long) Math.floor(Math.random() * 90000) + 10; 
+    	try {
+         
+			FileUtils.copyFile(((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE) , new File(Img_Path+number+".jpg"));
+		} catch (WebDriverException e) {
+			reportStep("The browser has been closed.", "FAIL");
+		} catch (IOException e) {
+			reportStep("The snapshot could not be taken", "WARN");
+		}
+		return number;
+	}
+      
+      public void createDoc(String testCaseName, ArrayList<String> screenshots) throws Exception {
+      	try{
+      		System.out.println("creating screenshot document....");
+      		SimpleDateFormat sdf = new SimpleDateFormat("ddMMyyyy_hh_mm_ss");
+			
+              XWPFDocument doc = new XWPFDocument();
+              XWPFParagraph p = doc.createParagraph();
+              XWPFRun xwpfRun = p.createRun();
+              
+              
+              int size = screenshots.size();
+             
+              for(int i=0;i<size;i++)
+              {
+            	  String imgFile1=screenshots1.get(i);
+                  String imgFile=screenshots.get(i);
+                  int format=XWPFDocument.PICTURE_TYPE_JPEG;
+                  xwpfRun.setText(imgFile1);
+                  xwpfRun.addBreak();
+                  if(!(imgFile.equalsIgnoreCase("11")))
+                  xwpfRun.addPicture (new FileInputStream(imgFile), format, imgFile, Units.toEMU(475), Units.toEMU(280)); // 200x200 pixels
+                  //xwpfRun.addBreak(BreakType.PAGE);
+              }
+             
+              String path=Doc_Path+testCaseName+"_"+sdf.format(new Date())+".docx";
+              System.out.println(path);
+              FileOutputStream out = new FileOutputStream(path);
+           
+              doc.write(out);
+              out.close();
+             
+              
+              test.log(LogStatus.INFO, "Screenshot Link  : <a href='"+path+"'>Screenshot link</a>");
+             // reportStep("Screenshot Link  : <a href='"+path+"'>Screenshot link</a>", "INFO");
+              
+      	}
+      	catch(Exception e){
+      		e.printStackTrace();
+      	}
+      	
+      	
+      }
+      
+      public void File_Copy(String Src,String Desc) throws InterruptedException, IOException{
+    	  File f1= new File(Src);
+    	  File f2= new File(Desc);
+    	  FileUtils.copyFile(f1, f2);
+
+    	  }
+      
+      public static String[][] readXLSX(String Filepath,String Sheet) throws IOException{    	 
+  		File excel=new File(Filepath);  		
+  		FileInputStream fis=new FileInputStream(excel);  		
+  		String Value=null;
+  		XSSFWorkbook book=new XSSFWorkbook(fis);  		
+  		XSSFSheet ws=book.getSheet(Sheet);  		
+  		XSSFCell cell;  		
+  		DataFormatter format=new DataFormatter();
+  		int rowNum=ws.getLastRowNum()+1;
+  		int colNum=ws.getRow(0).getLastCellNum();
+  		
+  		String[][] Parameter=new String[(colNum)][(rowNum)];
+  		for(int i=0;i<rowNum;i++){
+  			XSSFRow row=ws.getRow(i);
+  			for(int j=0;j<colNum;j++){
+  				
+  				cell=row.getCell(j);
+  				if(!(cell==null)){
+  					Value=format.formatCellValue(cell);
+  				}
+  				else{
+  					Value=null;
+  				}
+  				Parameter[j][i]=Value;
+  			}
+  			
+  		}
+  		book.close();
+  		return Parameter;
+  		
+  	}
+
+  	public String writeXLSX(String Filepath,String Sheet,String Value,int col,int row) throws IOException{
+  		
+  		String val=Value;
+  		String main=Sheet;
+  		FileInputStream fis=new FileInputStream(Filepath);
+  		XSSFWorkbook book=new XSSFWorkbook(fis);
+  		XSSFSheet ws=book.getSheet(main);
+  		ws.getRow(row).createCell(col).setCellValue(Value);
+  		fis.close();
+  		FileOutputStream fo=new FileOutputStream(Filepath);
+  		book.write(fo);
+  		book.close();
+  		fo.flush();
+  		fo.close();
+  		return val;
+  		
+  	}
+  	
+public void reportStep_only(String desc, String status) {
+		
+		
+		
+			
+		    screenshots1.add(desc);
+			screenshots.add("11");
+		
+		
+		
+		
+	
+			// Write if it is successful or failure or information
+			if(status.toUpperCase().equals("PASS")){
+				 
+				test.log(LogStatus.PASS, desc);
+			}else if(status.toUpperCase().equals("FAIL")){
+				test.log(LogStatus.FAIL, desc);
+				
+			}else if(status.toUpperCase().equals("INFO")){
+				test.log(LogStatus.INFO, desc);
+			}
+		
+		
+		
+	}
+
+public static void zipDirectory(File dir, String zipDirName) {
+    try {
+        populateFilesList(dir);
+        //now zip files one by one
+        //create ZipOutputStream to write to the zip file
+        FileOutputStream fos = new FileOutputStream(zipDirName);
+        ZipOutputStream zos = new ZipOutputStream(fos);
+        for(String filePath : filesListInDir){
+           // System.out.println("Zipping "+filePath);
+            //for ZipEntry we need to keep only relative file path, so we used substring on absolute path
+            ZipEntry ze = new ZipEntry(filePath.substring(dir.getAbsolutePath().length()+1, filePath.length()));
+            zos.putNextEntry(ze);
+            //read the file and write to ZipOutputStream
+            FileInputStream fis = new FileInputStream(filePath);
+            byte[] buffer = new byte[1024];
+            int len;
+            while ((len = fis.read(buffer)) > 0) {
+                zos.write(buffer, 0, len);
+            }
+            zos.closeEntry();
+            fis.close();
+        }
+        zos.close();
+        fos.close();
+    } catch (IOException e) {
+        e.printStackTrace();
+    }
+}
+
+
+private static void populateFilesList(File dir) throws IOException {
+    File[] files = dir.listFiles();
+    for(File file : files){
+        if(file.isFile()) filesListInDir.add(file.getAbsolutePath());
+        else populateFilesList(file);
+    }
+}
+
+public static String getTextAt(String cssId) {
+    if (driver instanceof JavascriptExecutor) {
+        JavascriptExecutor javascriptExecutor = (JavascriptExecutor) driver;
+        return (String) javascriptExecutor.executeScript("return document.querySelector('" + cssId + "').value;");
+    }
+    return null;
+}
+
+
+public void Unix_Caller(String Src,String path) throws ClassNotFoundException, SQLException, JSchException, SftpException {
+	 
+	
+	 ChannelSftp channelSftp;
+	 
+	 java.util.Properties config = new java.util.Properties();
+	    config.put("StrictHostKeyChecking", "no");
+	    JSch ssh = new JSch();
+	    com.jcraft.jsch.Session ses = ssh.getSession("S500834", "xbatw60q.AETNA.com", 22);
+	    ses.setConfig(config);
+	    ses.setPassword("-K6J]Tc,W3<)J!");
+	    ses.connect();
+		    channelSftp = (ChannelSftp) ses.openChannel("sftp");
+		    channelSftp.connect();
+		    channelSftp.get(Src,path);
+		    
+		    channelSftp.disconnect();
+		    ses.disconnect();
+
+	}
+
+
+public String putty(String cmd) throws JSchException, IOException, InterruptedException{
+	
+	String val=null;
+	try{
+    	
+    	java.util.Properties config = new java.util.Properties(); 
+    	config.put("StrictHostKeyChecking", "no");
+    	JSch jsch = new JSch();
+    	Session session=jsch.getSession("S500834", "xbatw60q.AETNA.com", 22);
+    	session.setPassword("-K6J]Tc,W3<)J!");
+    	session.setConfig(config);
+    	session.connect();
+    	System.out.println("Connected");
+    	
+    	Channel channel=session.openChannel("exec");
+        ((ChannelExec)channel).setCommand(cmd);
+        channel.setInputStream(null);
+        ((ChannelExec)channel).setErrStream(System.err);
+        
+        InputStream in=channel.getInputStream();
+        channel.connect();
+        byte[] tmp=new byte[1024];
+        while(true){
+          while(in.available()>0){
+            int i=in.read(tmp, 0, 1024);
+            if(i<0)break;
+            System.out.print(new String(tmp, 0, i));
+            val=new String(tmp, 0, i);
+          }
+          if(channel.isClosed()){
+            System.out.println("exit-status: "+channel.getExitStatus());
+            break;
+          }
+          try{Thread.sleep(1000);}catch(Exception ee){}
+        }
+        channel.disconnect();
+        session.disconnect();
+        //test.log(LogStatus.PASS, "Job Run Completed Successfully "); 
+        reportStep_only("Job Run Completed Successfully","PASS");
+        System.out.println("DONE");
+        
+     return val;
+    }catch(Exception e){
+    	
+    	  reportStep_only("Job Run Failed","FAIL");
+    	e.printStackTrace();
+    	 return val;
+    	 
+    }
+	
+}
+
+public void PDF_Reader(String file,String Desc,int page_number) throws IOException {
+	
+	 PdfReader reader = new PdfReader(file);
+	 String page = PdfTextExtractor.getTextFromPage(reader, page_number);
+	if(page.trim().contains(Desc.trim())) {
+		 
+		 reportStep_only("PDF content matched for page "+page_number,"PASS");
+		 
+		
+	 }
+	 else {
+		 
+		 reportStep_only("PDF content is NOT matched for page "+page_number,"FAIL");
+		 
+		 String path=Download_Path+PDF_ID+"_Page_"+page_number+".txt";
+		 
+		 if(new File(path).exists()) {
+			     Random rand = new Random(); 
+			  
+		      
+		        int rand_int1 = rand.nextInt(1000);
+			 path=Download_Path+PDF_ID+"_Page_"+page_number+"_"+Integer.toString(rand_int1)+".txt";
+		 }
+		 
+		 
+		    PrintWriter writer1 = new PrintWriter(path, "UTF-8");
+		    writer1.println("Expected");
+		    writer1.println("---------");
+		    writer1.println("");
+		    writer1.println(Desc.trim());
+		    writer1.println("");
+		    writer1.println("");
+		    writer1.println("Actual");
+		    writer1.println("---------");
+		    writer1.println("");
+		    writer1.println(page.trim());
+		    writer1.close();
+		 
+		 System.out.println("Expected");
+		 System.out.println(Desc.trim());
+		 System.out.println("Actual");
+		 System.out.println(page.trim());
+		 
+		 pdf_status=true;
+	 }
+		 
+	 }
+	
+	
+
+public static String Finder(String[][] data,String val) throws IOException{
+	
+	String text=null;
+	
+	for(int i=1;i<data[0].length;i++){
+	
+	 if(data[0][i].equalsIgnoreCase(val)){
+		 
+		
+			 
+		 text=data[1][i];
+			 break;
+			 
+		 
+	 }	 
+		
+	}
+	
+	return text;
+}
+
+
+public String Calender_Calculation(String date,int days) throws ParseException {
+	String val="";
+	
+	SimpleDateFormat formatter=new SimpleDateFormat("MM/dd/yyyy"); 
+	Date date1 = formatter.parse(date);
+	Calendar cal = Calendar.getInstance();
+	cal.setTime(date1);
+	cal.add(Calendar.DATE, days);
+	Date modifiedDate1 = cal.getTime();
+	val=formatter.format(modifiedDate1);
+	
+	return val;
+	
+}
+
+public static String[][] getInputData(String fileName, String sheetName) {
+
+    String[][] data = null;
+
+    try {
+
+         FileInputStream fis = new FileInputStream(new File(fileName));// ("./data/"+dataSheetName+".xlsx"));
+         XSSFWorkbook workbook = new XSSFWorkbook(fis);
+
+         XSSFSheet sheet = workbook.getSheet(sheetName);
+         DataFormatter format=new DataFormatter();
+         int rowCount = sheet.getLastRowNum();
+         XSSFCell cell;
+         // get the number of columns
+         int columnCount = sheet.getRow(0).getLastCellNum();
+         data = new String[rowCount][columnCount];
+
+         // loop through the rows
+         for (int i = 1; i < rowCount + 1; i++) {
+              try {
+                    XSSFRow row = sheet.getRow(i);
+                    for (int j = 0; j < columnCount; j++) { // loop through the
+                                                                         // columns
+                         try {
+                              String cellValue = "";
+                              cell=row.getCell(j);
+                              try {
+                            	  
+                            	  if(!(cell==null)){
+                            		  cellValue=format.formatCellValue(cell);
+                    				}
+                    				else{
+                    					cellValue=null;
+                    				}
+                            	  
+                                   
+                              } catch (NullPointerException e) {
+
+                              }
+
+                              data[i - 1][j] = cellValue; // add to the data array
+                         } catch (Exception e) {
+                              e.printStackTrace();
+                         }
+                    }
+
+              } catch (Exception e) {
+                    e.printStackTrace();
+              }
+         }
+         fis.close();
+
+    } catch (Exception e) {
+         e.printStackTrace();
+    }
+
+    return data;
+
+}
+
+public void scrolldown() throws InterruptedException {
+	
+	Thread.sleep(5000);
+	JavascriptExecutor js = ((JavascriptExecutor) driver);
+	js.executeScript("window.scrollTo(0, document.body.scrollHeight)");
+}
+
+public void JE_Submission_write(String emp) throws IOException {
+	
+	String[][] data=readXLSX(Rules_Book,"Emp_Details");
+	
+	 String Salary_Type = null;
+   
+	
+	for(int i=1;i<data[0].length;i++){
+	
+	 if(data[0][i].equalsIgnoreCase(emp)){
+		  
+		
+		 writeXLSX(Rules_Book,"Emp_Details","Yes",6,i);
+			 break;
+			 	 
+	 }	 
+	 
+	}
+	
+}
+
+
+public String JE_Submission_Status(String emp) throws IOException {
+	
+	String[][] data=readXLSX(Rules_Book,"Emp_Details");
+	
+	 String Status = null;
+   
+	
+	for(int i=1;i<data[0].length;i++){
+	
+	 if(data[0][i].equalsIgnoreCase(emp)){
+		  
+		
+		 Status=data[6][i];
+			 break;
+			 	 
+	 }	 
+	 
+	}
+	
+	return Status;
+}
+
+
+public String[] Find_Manager(String emp) throws IOException {
+	
+	String[][] data=readXLSX(Rules_Book,"Emp_Details");
+	
+	String[] val=new String[4];
+    String Manager_ID = null;
+    String Dept = null;
+    
+	
+	for(int i=1;i<data[0].length;i++){
+	
+	 if(data[0][i].equalsIgnoreCase(emp)){
+		  
+		
+		 Manager_ID=data[1][i];
+		 Dept=data[7][i];
+			 break;
+			 	 
+	 }	 
+	 
+	}
+	
+	val[0]=Manager_ID;
+	
+	String[][] data1=readXLSX(Rules_Book,"Admin_ID");
+	
+	val[1]=data1[1][1];
+	val[2]=data1[1][2];
+	
+	val[3]=Dept;
+	
+	
+	return val;
+	
+	
+	
+	
+}
+
+public String Date_converter(String val) throws ParseException {
+	String fin=null;
+	
+	SimpleDateFormat formatter = new SimpleDateFormat("mm/DD/yyyy");
+	Date date1 = formatter.parse(val);
+	SimpleDateFormat formatter1 = new SimpleDateFormat("yyyy-mm-dd");
+
+	fin=formatter1.format(date1);
+	
+	
+	return  fin;
+	
+	
+}
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+    	 
+}
+
