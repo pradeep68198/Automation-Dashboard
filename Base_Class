@@ -1,0 +1,70 @@
+package com.JE.Utilities;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.Properties;
+
+import org.apache.poi.ss.usermodel.DataFormatter;
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
+import com.JE.Pages.Candidate_Ranking_Page;
+import com.JE.Pages.Create_JE_Page;
+import com.JE.Pages.Existing_JEIR_Page;
+import com.JE.Pages.Existing_JE_Page;
+import com.JE.Pages.Functional_Elimination_Page;
+import com.JE.Pages.Job_Elimination_Admin_Page;
+import com.JE.Pages.Job_Elimination_Page;
+import com.JE.Pages.Job_Elimination_info_Page;
+import com.JE.Pages.New_Reports_Page;
+import com.JE.Pages.Notice_JE_Page;
+import com.JE.Pages.Candidate_Compare_Page;
+import com.JE.Pages.Candidate_Emp_Req_Page;
+import com.JE.Pages.Pending_Job_Elimination_Page;
+import com.JE.Utilities.General_Wrapper;
+
+
+
+public class Base_Class extends General_Wrapper {
+	
+
+	public Job_Elimination_Page JE_page;
+	public Create_JE_Page create_JE;
+	public Existing_JE_Page exist_JE;
+	public Job_Elimination_info_Page JE_Info;
+	public Existing_JEIR_Page exist_JEIR;
+	public Job_Elimination_Admin_Page JE_Admin;
+	public Candidate_Ranking_Page CR;
+	public Functional_Elimination_Page FE;
+	public Candidate_Compare_Page CC;
+	public Candidate_Emp_Req_Page C_Request_Report;
+	public Pending_Job_Elimination_Page Pending;
+	public Notice_JE_Page Notice;
+	public New_Reports_Page report;
+	
+	public Base_Class() throws FileNotFoundException, IOException{ 
+		
+       
+		JE_page=new Job_Elimination_Page();
+		create_JE=new Create_JE_Page();
+		exist_JE=new Existing_JE_Page();
+		JE_Info=new Job_Elimination_info_Page();
+		exist_JEIR=new Existing_JEIR_Page();
+		JE_Admin=new Job_Elimination_Admin_Page();
+		CR=new Candidate_Ranking_Page();
+		FE=new Functional_Elimination_Page();
+        CC=new Candidate_Compare_Page();
+        C_Request_Report=new Candidate_Emp_Req_Page();
+        Pending=new Pending_Job_Elimination_Page();
+        Notice=new Notice_JE_Page();
+        report=new New_Reports_Page();
+    
+	}
+	
+	
+}
