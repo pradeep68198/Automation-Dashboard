@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+<suite name="JE Integration Automation">
+
+ 
+ <test name="Legacy_Non_Severance" >
+ <parameter name="Excelsheet" value="Agreement_Return_Status_Report" />
+    <classes>
+      <class name="com.JE.Tests.Agreement_Return_Report_Test"/> 
+    </classes>
+ </test>
+ 
+</suite>
