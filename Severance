@@ -1,0 +1,53 @@
+package com.JE.Tests;
+
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.sql.SQLException;
+import java.text.ParseException;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactoryConfigurationError;
+
+import org.apache.http.auth.AuthenticationException;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Parameters;
+import org.testng.annotations.Test;
+import org.xml.sax.SAXException;
+
+import com.JE.Utilities.Driver_Wrapper;
+import com.JE.Utilities.General_Wrapper;
+import com.jcraft.jsch.JSchException;
+
+public class Severance extends Driver_Wrapper{
+	
+	
+	public Severance() throws IOException {
+		super();
+	}
+	
+	
+	 @Test(dataProvider = "dp" ,priority=1,description = "Validating whether user able to submit job elimination request for Aetna Legacy scenarios")
+	 @Parameters({ "launch","Doc_reviewed_by", "Start_Date","Letter_Date","Employee_ID","Override_Type","Date","Department","Position_Title","Work_Location","Workflow","Waiver" })
+	  public void Aetna_Severance_Scenario(String launch, String Doc_reviewed_by, String  Start_Date, String Letter_Date, String Employee_ID, String Override_Type, String Date, String Department, String Position_Title, String Work_Location,String Workflow,String Waiver) throws IOException, JSchException, InterruptedException, ParseException, AuthenticationException, ClassNotFoundException, SQLException, URISyntaxException, TransformerFactoryConfigurationError, TransformerException, ParserConfigurationException, SAXException {
+
+	     
+		  legacy.Aetna_Legacy(launch,Doc_reviewed_by,Start_Date,Letter_Date,Employee_ID,Override_Type,Date,Department,Position_Title,Work_Location,Workflow,Waiver);
+		  legacy.make_reset();
+	 
+	 
+	}
+	 
+	 
+	 @DataProvider
+	    public Object[][] dp() {
+	    	
+
+	          Object[][] data = General_Wrapper.getInputData(Data_Sheet,"Sheet1");
+	          return data;
+	    }
+ 
+	
+	
+	
+}
