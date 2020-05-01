@@ -1,0 +1,184 @@
+package com.JE.Pages;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.Keys;
+
+import com.JE.Utilities.General_Wrapper;
+
+public class Job_Elimination_Page extends General_Wrapper{
+	
+	
+	
+	
+    public By Create_New_JE=By.xpath("//span[text()='Create New Job Elimination']");
+    public By Existing_JE=By.xpath("//span[text()='Existing Job Eliminations']");
+    public By Contine_Button=By.xpath("//button[text()='Continue']");
+
+    public By New_JE_Dept_dropdown=By.xpath("//label[text()='Department']/following-sibling::div/angular2-multiselect/div/div[1]/div");
+    public By New_JE_Dept_search=By.xpath("//label[text()='Department']/following-sibling::div/angular2-multiselect/div/div[2]/div[3]/div/input");
+    public By New_JE_Dept_select=By.xpath("//label[text()='Department']/following-sibling::div/angular2-multiselect/div/div[2]/div[3]/ul/span/li[1]");
+    public By New_JE_Dept_text=By.xpath("//label[text()='Department']/following-sibling::div/angular2-multiselect/div/div/div/span/span");
+    public By New_JE_Dept_owner=By.xpath("//label[text()='Department Owner']/following-sibling::div/angular2-multiselect/div/div[1]/div");
+    public By New_JE_Dept_owner_search=By.xpath("//label[text()='Department Owner']/following-sibling::div/angular2-multiselect/div/div[2]/div[3]/div/input");
+    public By New_JE_Dept_owner_select=By.xpath("//label[text()='Department Owner']/following-sibling::div/angular2-multiselect/div/div[2]/div[3]/ul/span/li[1]");
+    public By New_JE_Dept_owner_select1=By.xpath("//label[text()='Department Owner']/following-sibling::div/angular2-multiselect/div/div[2]/div[3]/ul/span/li[2]");
+    
+   
+    
+    public By New_Docu_review_dropdown=By.xpath("//label[text()='Documentation reviewed by']/following-sibling::div/angular2-multiselect/div/div[1]/div");
+    public By New_Docu_review_search=By.xpath("//label[text()='Documentation reviewed by']/following-sibling::div/angular2-multiselect/div/div[2]/div[3]/div/input");
+    public By New_Docu_review_select=By.xpath("//label[text()='Documentation reviewed by']/following-sibling::div/angular2-multiselect/div/div[2]/div[3]/ul/span/li[1]");
+    
+    
+    //public By New_Docu_review_dropdown=By.xpath("//*[@id='reviewerInfo']/div/div[1]/div[2]/div/div/angular2-multiselect/div/div[1]/div");
+    //public By New_Docu_review_search=By.xpath("//*[@id='reviewerInfo']/div/div[1]/div[2]/div/div/angular2-multiselect/div/div[2]/div[3]/div/input");
+    //public By New_Docu_review_select=By.xpath("//*[@id='reviewerInfo']/div/div[1]/div[2]/div/div/angular2-multiselect/div/div[2]/div[3]/ul/span/li[1]");
+    
+ 
+    
+    public By New_Salary_Conti_Start=By.xpath("//*[@id='salaryContinuationStartDateSection']/div/input");
+    public By New_Salary_Conti_end_click=By.xpath("//*[@id='reviewerInfo']/div/div[2]/div[2]/div/div/input");
+    
+    public String New_Salary_Conti_End="input[name=\"SalaryContinuationEndDate\"]";
+    public String New_Salary_Conti_End_admin="input[name=\"SalaryContinuationEndDate\"]";
+    /*
+    public String New_Salary_Conti_End="#reviewerInfo > div > div:nth-child(2) > div:nth-child(2) > div > div > input";
+    public String New_Salary_Conti_End_admin="#reviewerInfo > div > div.row.ng-star-inserted > div:nth-child(2) > div > div > input";
+    */
+   
+    
+   
+    
+       public void Create_New_JE_Action(){
+    	
+	    Click(Create_New_JE,"Create_New_JE");
+	  
+ 	
+       }
+	    
+	    
+	    public void Existing_JE_Action(){
+	    	
+	    	 Click(Existing_JE,"Existing_JE");
+	    	
+	    }
+	    
+	    public void Contine_Button_Action(){
+	    	
+	    	 Click(Contine_Button,"Contine_Button");
+	    	
+	    }
+	    
+	    public  void New_JE_Dept_dropdown_Action(){
+	    	
+	    	
+	    	
+	    	 Click(New_JE_Dept_dropdown,"New_JE_Dept_dropdown");
+	    	 
+	    
+	    	
+	    }
+	    
+	    public void New_JE_Dept_search_Action(String value){
+	    	
+	    	enterText(New_JE_Dept_search,value,"New_JE_Dept_search");
+	    	
+	    }
+	    
+      public String New_JE_Dept_text_Action() {
+	    	
+	    	String name=Get_Text(New_JE_Dept_text,"New_JE_Dept_text");
+	    	
+	    	String[] name1=name.split("--");
+	    	
+	    	return name1[0].trim();
+	    	
+	    	
+	    }
+	    public void New_JE_Dept_select_Action(){
+	    	
+	    	 Click(New_JE_Dept_select,"New_JE_Dept_select");
+	    	
+	    }
+	    
+	    public  void New_JE_Dept_owner_Action(){
+	    	
+	    	
+	    	
+	    	 Click(New_JE_Dept_owner,"New_JE_Dept_owner");
+	    	 
+	    
+	    	
+	    }
+	    
+	    public void New_JE_Dept_owner_search_Action(String value) throws InterruptedException{
+	    	
+	    	enterText(New_JE_Dept_owner_search,value.trim(),"New_JE_Dept_owner_search");
+	    	
+	    	for(int i=0;i<=10;i++) {
+	    	driver.findElement(New_JE_Dept_owner_search).sendKeys(Keys.ENTER);
+	    	Thread.sleep(2000);
+	    	if(!(isElementPresent(New_JE_Dept_owner_select1))) {
+	    		break;
+	    	
+	    	}
+	    	Thread.sleep(2000);
+	    	}
+	    	
+	    }
+	    
+	    public void New_JE_Dept_owner_select_Action(){
+	    	
+	    	 Click(New_JE_Dept_owner_select,"New_JE_Dept_owner_select");
+	    	
+	    }
+	    
+	    
+	    public void New_Docu_review_dropdown_Action(){
+	    	
+	    	 Click(New_Docu_review_dropdown,"New_Docu_review_dropdown");
+	    	
+	    }
+	    
+	    public void New_Docu_review_search_Action(String value){
+	    	
+	    	enterText(New_Docu_review_search,value,"New_Docu_review_search");
+	    	
+	    }
+	    
+	    public void New_Docu_review_select_Action(){
+	    	
+	    	 Click(New_Docu_review_select,"New_Docu_review_select");
+	    	
+	    }
+	    
+       public void New_Salary_Conti_Start_Action(String value){
+    	   
+    		
+	    	enterText(New_Salary_Conti_Start,value,"New_Salary_Conti_Start");
+	    	
+	   	
+	    	
+	    }
+       
+       public void New_Salary_Conti_end_click_Action(){
+       	
+   	    Click(New_Salary_Conti_end_click,"New_Salary_Conti_end_click");
+    	
+          }
+       
+       public String New_Salary_Conti_End_Action(){
+	    	
+    	     String Text=getTextAt(New_Salary_Conti_End);
+      	     return Text.trim();
+	    	
+	    }
+       
+       public String New_Salary_Conti_End_admin_Action(){
+	    	
+  	     String Text=getTextAt(New_Salary_Conti_End_admin);
+    	     return Text.trim();
+	    	
+	    }
+
+}
