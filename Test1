@@ -1,0 +1,43 @@
+package Sample.Test;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
+import com.MainFrame.Reader.JRecordInterface1;
+import com.MainFrame.Reader.Common.Constants;
+import com.MainFrame.Reader.Details.AbstractLine;
+import com.MainFrame.Reader.IO.AbstractLineReader;
+import com.MainFrame.Reader.def.IO.builders.ICobolIOBuilder;
+
+public class Test1 {
+	
+	public static String salesFile      = "DTAR020.bin";
+	public static String salesFileOut   = "C:\\Users\\Admin\\Desktop\\Pavithra\\DTAR020out.txt";
+	static double GST_CONVERSION = 1.1;
+	
+	 static AbstractLine saleRecord;
+	 static double gstExclusive;
+
+	 public static void main(String[] args) throws FileNotFoundException, IOException {
+			
+			
+		   ICobolIOBuilder ioBuilder = JRecordInterface1.COBOL
+                 .newIOBuilder("DTAR020.cbl")
+                     .setFont("cp037")
+                     .setFileOrganization(Constants.IO_FIXED_LENGTH_RECORDS);   
+		  
+     AbstractLineReader reader = ioBuilder.newReader(salesFile);
+    
+     while ((saleRecord = reader.read()) != null) {
+         System.out.println(saleRecord.getFieldValue("DTAR020-KEYCODE-NO").asString()
+                 + " " + saleRecord.getFieldValue("DTAR020-QTY-SOLD").asString()
+                 + " " + saleRecord.getFieldValue("DTAR020-SALE-PRICE").asString());
+
+     }
+    
+    reader.close();
+		
+
+	}
+
+}
