@@ -1,0 +1,608 @@
+	package Sample;
+
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Random;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.poi.ss.usermodel.DataFormatter;
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.w3c.dom.DOMImplementation;
+
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+
+
+import org.w3c.dom.Document;
+import org.w3c.dom.DocumentType;
+
+
+
+
+public class ExcelRead {
+	
+	public String[][] readXLSXFile(String Filepath,String sheet) throws IOException {
+		
+		
+		
+		File excel = new File(Filepath);
+		FileInputStream fis = new FileInputStream(excel);
+		String value=null;
+		XSSFWorkbook workbook= new XSSFWorkbook(fis);
+		XSSFSheet ws = workbook.getSheet(sheet);
+		XSSFCell cell;
+		
+		DataFormatter formatter = new DataFormatter();
+		int rowNum = ws.getLastRowNum()+1;
+	  int colNum = ws.getRow(0).getLastCellNum();
+	 
+		  String[][] parameterarray = new String[(colNum)][rowNum];
+		  for (int i = 1; i < rowNum; i++) {
+			  XSSFRow row = ws.getRow(i);
+			  for (int j = 0; j < colNum; j++) {
+				  
+				  cell = row.getCell(j);
+				
+				 
+				  if(!(cell==null)){
+					  
+					  
+					 
+					 value = formatter.formatCellValue(cell);
+				  }
+				  else{
+					  value = null; 
+				  }
+	           
+	            
+	            parameterarray[j][i] = value;
+	          
+			  }
+			  
+		  }
+		  workbook.close();
+		  return parameterarray;
+		
+	}
+	
+public String[][] readXLSXFile1(String Filepath,String sheet) throws IOException {
+		
+		
+		
+		File excel = new File(Filepath);
+		FileInputStream fis = new FileInputStream(excel);
+		String value=null;
+		XSSFWorkbook workbook= new XSSFWorkbook(fis);
+		XSSFSheet ws = workbook.getSheet(sheet);
+		XSSFCell cell;
+		
+		DataFormatter formatter = new DataFormatter();
+		int rowNum = ws.getLastRowNum()+1;
+	  int colNum = ws.getRow(0).getLastCellNum();
+	 
+		  String[][] parameterarray = new String[(colNum)][rowNum];
+		  for (int i = 0; i < rowNum; i++) {
+			  XSSFRow row = ws.getRow(i);
+			  for (int j = 0; j < colNum; j++) {
+				  
+				  cell = row.getCell(j);
+				
+				 
+				  if(!(cell==null)){
+					  
+					  
+					 
+					 value = formatter.formatCellValue(cell);
+				  }
+				  else{
+					  value = null; 
+				  }
+	           
+	            
+	            parameterarray[j][i] = value;
+	          
+			  }
+			  
+		  }
+		  workbook.close();
+		  return parameterarray;
+		
+	}
+	
+	public void XML_Read(String Path, Document doc)throws IOException, ParserConfigurationException, TransformerException, InterruptedException{
+		TransformerFactory transformerFactory = TransformerFactory.newInstance();
+		Transformer transformer = transformerFactory.newTransformer();
+		transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+		transformer.setOutputProperty(OutputKeys.METHOD, "xml");
+		transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
+		DOMImplementation domImpl = doc.getImplementation();
+		DocumentType doctype = domImpl.createDocumentType("doctype",
+		    "SYSTEM",
+		    "http://testng.org/testng-1.0.dtd");
+		transformer.setOutputProperty(OutputKeys.DOCTYPE_PUBLIC, doctype.getPublicId());
+		transformer.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM, doctype.getSystemId());
+		DOMSource source = new DOMSource(doc);
+		StreamResult result = new StreamResult(new File(Path+"\\Testng.xml"));
+		transformer.transform(source, result);
+		//Thread.sleep(2000);
+	}
+	
+	public void Create_bat(String Pro_Path,String Lib_Path,String Java_Path,String Report,String Fname) throws FileNotFoundException, UnsupportedEncodingException, InterruptedException{
+		//Thread.sleep(3000);
+		String[] Split=Pro_Path.split("\\\\");
+		PrintWriter writer = new PrintWriter(Fname, "UTF-8");
+	    writer.println("cd\\");
+	    writer.println(Split[0]);
+	    writer.println("cd " +Pro_Path);
+	    writer.println("set path="+Java_Path+";");
+	    writer.println("set classpath="+Lib_Path+"\\*;");
+	    writer.println("java -cp \".\\bin;"+Lib_Path+"\\*;\" org.testng.TestNG Testng.xml");
+	    writer.println("START chrome "+Report);
+	    writer.println("exit");
+	    writer.close();
+	    //Thread.sleep(3000);
+
+	}
+	
+	public void Create_Maven_bat(String Pro_Path,String Report,String Fname) throws FileNotFoundException, UnsupportedEncodingException, InterruptedException{
+		//Thread.sleep(3000);
+		String[] Split=Pro_Path.split("\\\\");
+		PrintWriter writer = new PrintWriter(Fname, "UTF-8");
+	    writer.println("cd\\");
+	    writer.println(Split[0]);
+	    writer.println("cd " +Pro_Path);
+	    writer.println("mvn clean test");
+	    writer.println("START chrome "+Report);
+	    writer.println("exit");
+	    writer.close();
+	    //Thread.sleep(3000);
+
+	}
+	
+	public void GitClone_bat(String Pro_Path,String url,String Fname) throws FileNotFoundException, UnsupportedEncodingException, InterruptedException{
+		
+		String[] Split=Pro_Path.split("\\\\");
+		PrintWriter writer = new PrintWriter(Fname, "UTF-8");
+	    writer.println("cd\\");
+	    writer.println(Split[0]);
+	    writer.println("cd " +Pro_Path);
+	    writer.println("git clone "+url+".git");
+	    writer.println("exit");
+	    writer.close();
+	    //Thread.sleep(3000);
+	}
+	
+public void Add_Commit_bat(String Pro_Path,String Fname) throws FileNotFoundException, UnsupportedEncodingException, InterruptedException{
+		
+		String[] Split=Pro_Path.split("\\\\");
+		PrintWriter writer = new PrintWriter(Fname, "UTF-8");
+	    writer.println("cd\\");
+	    writer.println(Split[0]);
+	    writer.println("cd " +Pro_Path);
+	    writer.println("git add .");
+	    writer.println("git commit -m 'TestNG Commit'");
+	    writer.println("exit");
+	    writer.close();
+	    //Thread.sleep(3000);
+	}
+	
+	public void GitPull_bat(String Pro_Path,String url,String Repo_Name, String Fname) throws FileNotFoundException, UnsupportedEncodingException, InterruptedException{
+		
+		String[] Split=Pro_Path.split("\\\\");
+		PrintWriter writer = new PrintWriter(Fname, "UTF-8");
+	    writer.println("cd\\");
+	    writer.println(Split[0]);
+	    writer.println("cd " +Pro_Path);
+	    writer.println("git init");
+	    writer.println("git remote add "+Repo_Name+" "+url);
+	    writer.println("git fetch "+Repo_Name);
+	    writer.println("git pull "+Repo_Name+" master");
+	    writer.println("exit");
+	    writer.close();
+	    //Thread.sleep(3000);
+
+	}
+	
+public void GitPush_bat(String Pro_Path,String URL,String Uname,String PWD, String Fname) throws FileNotFoundException, UnsupportedEncodingException, InterruptedException{
+		
+		String[] Split=Pro_Path.split("\\\\");
+		String[] URL1=URL.split("://");
+		String Combine=Uname+":"+PWD+"@";
+		PrintWriter writer = new PrintWriter(Fname, "UTF-8");
+	    writer.println("cd\\");
+	    writer.println(Split[0]);
+	    writer.println("cd " +Pro_Path);
+	    writer.println("git add .");
+	    writer.println("git commit -a -m \"Final Commit\"");
+	    writer.println("git push --set-upstream https://"+Combine+URL1[1]+".git master");
+	    writer.println("exit");
+	    writer.close();
+	    //Thread.sleep(3000);
+
+	}
+	
+	public void Execution(String Fname) throws Exception{
+		Kill_Bat();
+		Thread.sleep(2000);
+		Runtime runtime = Runtime.getRuntime();
+		System.out.println(runtime);
+		Process p1 = runtime.exec("cmd /c start "+Fname);
+		System.out.println(runtime);
+		
+	
+	}
+	
+public void Execution_Wait() throws Exception{
+		
+	 String TASKLIST = "tasklist";
+	 String KILL = "taskkill /F /IM ";
+	 String processName = "cmd.exe";
+	 for (int second = 0;second<300000; second++) {
+			
+		 if (isProcessRunning(processName,TASKLIST)) {
+
+			 Thread.sleep(1000);
+			 
+		 }
+		 else{
+			 break;
+		 }
+		
+		}
+	   
+		
+	
+	}
+
+public void Kill_Bat() throws Exception{
+	
+	 Process p = Runtime.getRuntime().exec("taskkill /F /IM cmd.exe");
+	   
+		
+	
+	}
+
+public static boolean isProcessRunning(String serviceName,String TASKLIST) throws Exception {
+
+	 Process p = Runtime.getRuntime().exec(TASKLIST);
+	 BufferedReader reader = new BufferedReader(new InputStreamReader(
+	   p.getInputStream()));
+	 String line;
+	 while ((line = reader.readLine()) != null) {
+
+	 // System.out.println(line);
+	  if (line.contains(serviceName)) {
+	   return true;
+	  }
+	 }
+
+	 return false;
+
+	}
+
+public String[] file_list(String path)
+{
+	String[] NameList=null;
+	int count=0;
+	int cc=0;
+	String[] PathSplit=path.split(";");
+	for(int i=0;i<PathSplit.length;i++){
+	File folder = new File(PathSplit[i]);
+	File[] listOfFiles = folder.listFiles();
+	 
+	    count=count+listOfFiles.length;
+	
+	}
+	NameList=new String[count];
+	for(int i=0;i<PathSplit.length;i++){
+		File folder = new File(PathSplit[i]);
+		File[] listOfFiles = folder.listFiles();
+
+	for (int j = 0; j < listOfFiles.length; j++) {	
+	      if (listOfFiles[j].isFile()) {
+	    	  String name=listOfFiles[j].getName();
+	    	 NameList[cc]=stripExtension(name);
+	         cc++;
+	      } 
+	    }
+	}
+	
+	    
+	return NameList;
+	
+}
+
+public String[] file_list_Pack(String path,int size)
+{
+	String[] NameList=null;
+	
+	int cc=0;
+	String[] PathSplit=path.split(";");
+	NameList=new String[size];
+	for(int i=0;i<PathSplit.length;i++){
+		System.out.println("Pack :"+PathSplit[i]);
+		String[] nn1 =PathSplit[i].split("src\\\\");
+		String nn2=nn1[1].replace("\\",".");
+		System.out.println("Pack with dot :"+nn2);
+		File folder = new File(PathSplit[i]);
+		File[] listOfFiles = folder.listFiles();
+	for (int j = 0; j < listOfFiles.length; j++) {
+		  String name=listOfFiles[j].getName();
+	    	 NameList[cc]=nn2+"."+stripExtension(name);
+	         cc++;
+	      } 
+	    }
+	
+	    
+	return NameList;
+	
+} 
+
+public String[] file_list_Pack_Maven(String path,int size)
+{
+	String[] NameList=null;
+	
+	int cc=0;
+	String[] PathSplit=path.split(";");
+	NameList=new String[size];
+	for(int i=0;i<PathSplit.length;i++){
+		System.out.println("Pack :"+PathSplit[i]);
+		String[] nn1 =PathSplit[i].split("src\\\\main\\\\testcases\\\\");
+		String nn2=nn1[1].replace("\\",".");
+		System.out.println("Pack with dot :"+nn2);
+		File folder = new File(PathSplit[i]);
+		File[] listOfFiles = folder.listFiles();
+	for (int j = 0; j < listOfFiles.length; j++) {
+		  String name=listOfFiles[j].getName();
+	    	 NameList[cc]=nn2+"."+stripExtension(name);
+	         cc++;
+	      } 
+	    }
+	
+	    
+	return NameList;
+	
+} 
+
+
+public static String stripExtension (String str) {
+    // Handle null case specially.
+
+    if (str == null) return null;
+
+    // Get position of last '.'.
+
+    int pos = str.lastIndexOf(".");
+
+    // If there wasn't any '.' just return the string as is.
+
+    if (pos == -1) return str;
+
+    // Otherwise return the string
+
+    return str.substring(0, pos);
+}
+
+public String Bat_File_Name (String Path) {
+   
+
+	SimpleDateFormat ft = new SimpleDateFormat ("yyyy-MM-dd"); 
+	   Date date = new Date();
+	   String Date_text=ft.format(date);
+	   Random ran=new Random();
+	   int j=ran.nextInt(1000000);
+	   String Ran_Str=Integer.toString(j);
+	   String File_Name=Path+"Execution_"+Date_text+"_"+Ran_Str+".bat";
+	   return File_Name;
+}
+
+public void Create_ALM_Prop(String URL,String Username,String Password,String Domain,String Project,String Java_Bin_Path,String Test_Sheet,String Project_Path,String Jar_Path,String ALM_TS_Path,String ALM_TS_Name) throws FileNotFoundException, UnsupportedEncodingException, InterruptedException{
+	
+	String Java_Bin_Path1=Java_Bin_Path.replace("\\", "\\\\");
+	String Test_Sheet1=Test_Sheet.replace("\\", "\\\\");
+	String Jar_Path1=Jar_Path.replace("\\", "\\\\");
+	String ALM_TS_Path1=ALM_TS_Path.replace("\\", "\\\\");
+	String ALM_TS_Name1=ALM_TS_Name.replace("\\", "\\\\");
+	PrintWriter writer = new PrintWriter(Project_Path+"\\ALM.properties", "UTF-8");
+    writer.println("URL = "+URL);
+    writer.println("Username = "+Username);
+    writer.println("Password = "+Password);
+    writer.println("Domain = "+Domain);
+    writer.println("Project = "+Project);
+    writer.println("Java_Bin_Path = "+Java_Bin_Path1);
+    writer.println("Test_Sheet = "+Test_Sheet1);
+    writer.println("Jar_Path = "+Jar_Path1);
+    writer.println("ALM_TS_Path = "+ALM_TS_Path1);
+    writer.println("ALM_TS_Name = "+ALM_TS_Name1);
+    writer.close();
+  
+
+}
+
+public void Create_ALM_Prop1(String URL,String Username,String Password,String Domain,String Project,String Java_Bin_Path,String Test_Sheet,String Project_Path,String Jar_Path,String ALM_TS_Path,String ALM_TS_Name,String TC_Status) throws FileNotFoundException, UnsupportedEncodingException, InterruptedException{
+	
+	String Java_Bin_Path1=Java_Bin_Path.replace("\\", "\\\\");
+	String Test_Sheet1=Test_Sheet.replace("\\", "\\\\");
+	String Jar_Path1=Jar_Path.replace("\\", "\\\\");
+	String ALM_TS_Path1=ALM_TS_Path.replace("\\", "\\\\");
+	String ALM_TS_Name1=ALM_TS_Name.replace("\\", "\\\\");
+	PrintWriter writer = new PrintWriter(Project_Path+"\\ALM1.properties", "UTF-8");
+    writer.println("URL = "+URL);
+    writer.println("Username = "+Username);
+    writer.println("Password = "+Password);
+    writer.println("Domain = "+Domain);
+    writer.println("Project = "+Project);
+    writer.println("Java_Bin_Path = "+Java_Bin_Path1);
+    writer.println("Test_Sheet = "+Test_Sheet1);
+    writer.println("Jar_Path = "+Jar_Path1);
+    writer.println("ALM_TS_Path = "+ALM_TS_Path1);
+    writer.println("ALM_TS_Name = "+ALM_TS_Name1);
+    writer.println("TC_Status = "+TC_Status);
+    
+    writer.close();
+
+
+}
+
+public void Create_ALM_bat(String Pro_Path,String Lib_Path,String Java_Path,String Fname) throws FileNotFoundException, UnsupportedEncodingException, InterruptedException{
+	
+	String[] Split=Pro_Path.split("\\\\");
+	PrintWriter writer = new PrintWriter(Fname, "UTF-8");
+    writer.println("cd\\");
+    writer.println(Split[0]);
+    writer.println("cd " +Pro_Path);
+    writer.println("set path="+Java_Path+";");
+    writer.println("set classpath="+Lib_Path+"\\*;");
+    writer.println("javac ALM_Inte.java");
+    writer.println("java ALM_Inte");
+    writer.println("exit");
+    writer.close();
+
+
+}
+
+public void Create_ALM_bat1(String Pro_Path,String Lib_Path,String Java_Path,String Fname) throws FileNotFoundException, UnsupportedEncodingException, InterruptedException{
+	
+	String[] Split=Pro_Path.split("\\\\");
+	PrintWriter writer = new PrintWriter(Fname, "UTF-8");
+    writer.println("cd\\");
+    writer.println(Split[0]);
+    writer.println("cd " +Pro_Path);
+    writer.println("set path="+Java_Path+";");
+    writer.println("set classpath="+Lib_Path+"\\*;");
+    writer.println("javac ALM_Final.java");
+    writer.println("java ALM_Final");
+    writer.println("exit");
+    writer.close();
+   
+
+}
+
+public void File_Copy(String Src,String Desc) throws InterruptedException, IOException{
+	File f1= new File(Src);
+	File f2= new File(Desc);
+	FileUtils.copyFile(f1, f2);
+
+}
+
+public void Report_File(String Report,String Report_Path) throws InterruptedException, IOException{
+	String Src=Report;
+	String Dest= Report_Path;
+	File_Copy(Src,Dest);
+System.out.println("Report Copy done");
+Thread.sleep(3000);
+}
+
+public void Restart_server(String url) throws InterruptedException, IOException{
+	Runtime runtime = Runtime.getRuntime();
+	System.out.println(runtime);
+	Process p1 = runtime.exec("cmd /c start chrome "+url);
+	Thread.sleep(10000);
+	
+}
+
+public String Java_Bin() throws IOException{
+	
+	String pp2=null;
+    File folder = new File("C:\\Program Files");
+    if (folder.isDirectory()) {
+      File[] listOfFiles = folder.listFiles();
+      System.out.println(listOfFiles.length);
+      if (listOfFiles.length < 1)
+        System.out.println("There is no File inside Folder");
+      else
+        System.out.println("List of Files & Folder");
+      for (File file : listOfFiles) {
+                          if(file.getCanonicalPath().toString().contains("Java")) {
+                        	  String pp1=file.getCanonicalPath().toString();
+                        	  File folder1 = new File(pp1);
+                        	  File[] listOfFiles1 = folder1.listFiles();
+                        	  for (File file2 : listOfFiles1) {
+                        		  if(file2.getCanonicalPath().toString().contains("jdk")) {
+                        			  
+                        			  pp2=file2.getCanonicalPath().toString()+"\\bin";
+                        			 
+                        			  
+                        		  }
+                        		  
+                        	  }
+                        	  
+                          }
+        
+      }
+    }
+
+	 return pp2;
+	
+}
+
+public void unZipIt(String Src, String Desc){
+	System.out.println("11");
+	javaxt.io.Directory input = new javaxt.io.Directory(Src);
+	javaxt.io.Directory output = new javaxt.io.Directory(Desc);
+	System.out.println("22");
+	input.copyTo(output, true); //true to overwrite any existing files
+	System.out.println("33");
+  }
+
+public String Java_Bin32() throws IOException{
+	
+	String pp2=null;
+    File folder = new File("C:\\Program Files (x86)");
+    if (folder.isDirectory()) {
+      File[] listOfFiles = folder.listFiles();
+      System.out.println(listOfFiles.length);
+      if (listOfFiles.length < 1)
+        System.out.println("There is no File inside Folder");
+      else
+        System.out.println("List of Files & Folder");
+      for (File file : listOfFiles) {
+                          if(file.getCanonicalPath().toString().contains("Java")) {
+                        	  String pp1=file.getCanonicalPath().toString();
+                        	  File folder1 = new File(pp1);
+                        	  File[] listOfFiles1 = folder1.listFiles();
+                        	  for (File file2 : listOfFiles1) {
+                        		  if(file2.getCanonicalPath().toString().contains("jdk")) {
+                        			  
+                        			  pp2=file2.getCanonicalPath().toString()+"\\bin";
+                        			 
+                        			  
+                        		  }
+                        		  
+                        	  }
+                        	  
+                          }
+        
+      }
+    }
+
+	 return pp2;
+	
+}
+
+
+
+}
